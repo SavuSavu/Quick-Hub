@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quick-Hub - A centralized dashboard for useful tools">
+    <meta name="theme-color" content="#1e1e1e">
+    <title>Quick-Hub</title>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="bi bi-grid-1x2-fill"></i> <!-- Changed icon -->
+                    <h1>Quick-Hub</h1>
+                </div>
+                <!-- Maybe add theme toggle or settings later -->
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Dashboard Content (Categories & Search) -->
+        <div class="dashboard-content">
+            <div class="search-bar-container">
+                <i class="bi bi-search search-icon"></i>
+                <input type="search" id="search-bar" placeholder="Search tools or categories...">
+            </div>
+
+            <div id="category-container">
+                <!-- Categories will be injected here by JavaScript -->
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="spinner" style="border: 4px solid rgba(255, 255, 255, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 0.5rem;"></div>
+                    <p style="color: var(--gray);">Loading tools...</p>
+                </div>
+            </div>
+
+            <div id="no-results" class="hidden">
+                <p>No results found for "<span id="search-term-display"></span>"</p>
+            </div>
+        </div>
+
+        <!-- Tool View (Iframe Loader) -->
+        <div id="tool-view" class="tool-view hidden">
+            <div class="iframe-header">
+                <h2 id="iframe-title" class="iframe-title">Tool Title</h2>
+                <button id="iframe-close-btn" class="iframe-close-btn" title="Close Tool View">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <iframe id="tool-iframe" src="about:blank" title="Tool Content" frameborder="0"></iframe>
+        </div>
+    </main>
+
+    <footer>
+        <p>Quick-Hub &copy; <span id="footer-year"></span> - A collection of useful tools.</p>
+    </footer>
+
+    <!-- Main Script -->
+    <script src="scripts.js"></script>
+</body>
+</html>

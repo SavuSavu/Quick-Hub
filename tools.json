@@ -1,0 +1,67 @@
+{
+    "categories": [
+      {
+        "id": "file-analysis",
+        "name": "File Analysis",
+        "icon": "bi-file-earmark-binary",
+        "tools": [
+          {
+            "id": "bomstorm",
+            "url": "tools/BOMStorm/index.html",
+            "name": "BOMStorm",
+            "description": "CycloneDX XML SBOM Analyzer",
+            "type": "iframe"
+          },
+          {
+            "id": "json-analyzer",
+            "url": "#",
+            "name": "JSON Analyzer",
+            "description": "Analyze JSON structure and content (Placeholder)",
+            "type": "placeholder"
+          },
+          {
+            "id": "binary-analyzer",
+            "url": "tools/Binary-Analyzer/index.html",
+            "name": "Binary Analyzer",
+            "description": "Basic binary file analysis (Placeholder)",
+            "type": "iframe"
+          }
+        ]
+      },
+      {
+        "id": "networking",
+        "name": "Networking",
+        "icon": "bi-globe",
+        "tools": [
+          {
+            "id": "not-ping",
+            "url": "tools/NOT-PING/index.html",
+            "name": "NOT-PING",
+            "description": "Simulated network testing suite (Ping, Latency, Trace)",
+            "type": "iframe"
+          },
+          {
+            "id": "network-scanner",
+            "url": "#",
+            "name": "Network Scanner",
+            "description": "Scan local network for devices (Placeholder)",
+            "type": "placeholder"
+          }
+        ]
+      },
+      {
+         "id": "external-tools",
+         "name": "External Tools",
+         "icon": "bi-link-45deg",
+         "tools": [
+           {
+             "id": "example-external",
+             "url": "https://example.com",
+             "name": "Example External Link",
+             "description": "Opens example.com in a new tab",
+             "type": "link"
+           }
+         ]
+      }
+    ]
+  }

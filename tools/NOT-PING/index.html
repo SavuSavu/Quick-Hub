@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOT-PING</title>
+    <!-- Link to Quick-Hub's main CSS -->
+    <link href="../../styles.css" rel="stylesheet">
+    <!-- Bootstrap Icons (needed for main styles) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+     <style>
+         /* Local styles needed */
+         @keyframes pulse {
+             0% { opacity: 1; }
+             50% { opacity: 0.5; }
+             100% { opacity: 1; }
+         }
+         /* Styles for connection bars if not global */
+         .connection-quality { display: flex; align-items: center; }
+         .connection-bars { display: flex; align-items: flex-end; gap: 2px; height: 20px; margin-left: 0.5rem; }
+         .connection-bar { width: 5px; background-color: var(--border-color); transition: background-color 0.3s, height 0.3s; }
+         .connection-bar:nth-child(1) { height: 20%; }
+         .connection-bar:nth-child(2) { height: 40%; }
+         .connection-bar:nth-child(3) { height: 60%; }
+         .connection-bar:nth-child(4) { height: 80%; }
+         .connection-bar:nth-child(5) { height: 100%; }
+         /* Apply active/warning/danger based on JS */
+         .connection-bars[data-level="1"] .connection-bar:nth-child(1),
+         .connection-bars[data-level="2"] .connection-bar:nth-child(-n+2),
+         .connection-bars[data-level="3"] .connection-bar:nth-child(-n+3),
+         .connection-bars[data-level="4"] .connection-bar:nth-child(-n+4),
+         .connection-bars[data-level="5"] .connection-bar:nth-child(-n+5) {
+             background-color: var(--danger); /* Default to danger */
+         }
+         .connection-bars[data-level="2"] .connection-bar:nth-child(-n+2),
+         .connection-bars[data-level="3"] .connection-bar:nth-child(-n+3) {
+             background-color: var(--warning);
+         }
+         .connection-bars[data-level="4"] .connection-bar:nth-child(-n+4),
+         .connection-bars[data-level="5"] .connection-bar:nth-child(-n+5) {
+             background-color: var(--success);
+         }
+
+         .status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.5rem; background-color: var(--success); transition: background-color 0.3s; }
+         .status-indicator.warning { background-color: var(--warning); }
+         .status-indicator.danger { background-color: var(--danger); }
+         .animation-pulse { animation: pulse 1.5s infinite; } /* Define pulse animation */
+     </style>
+</head>
+<body class="tool-page">
+    <div class="card">
+        <div class="card-header">
+             <h1 class="card-title">NOT-PING</h1>
+             <i class="bi bi-reception-4 card-icon"></i>
+        </div>
+
+        <div class="connection-quality" style="margin-bottom: 1rem;">
+            <span class="status-indicator" id="connectivityStatus"></span>
+            <span id="connectivityLabel">Checking connectivity...</span>
+            <div class="connection-bars" id="connectionBars" data-level="0"> <!-- Set initial data-level -->
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+            </div>
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab active" data-tab="ping"><i class="bi bi-broadcast"></i> Ping</button>
+            <button class="tab" data-tab="latency"><i class="bi bi-speedometer2"></i> Latency</button>
+            <button class="tab" data-tab="traceroute"><i class="bi bi-signpost-split"></i> Trace Route</button>
+            <button class="tab" data-tab="dns"><i class="bi bi-search"></i> DNS Lookup</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="hostInput" placeholder="Enter domain or IP (e.g. google.com)" value="google.com">
+            <button id="startTestBtn" class="btn btn-primary" title="Run Test for Active Tab">
+                <i class="bi bi-play-fill"></i> Run
+            </button>
+        </div>
+
+         <!-- Tab Content (Ping) -->
+         <div class="tab-content active" id="ping-tab">
+             <div class="btn-group">
+                 <button class="btn btn-secondary" id="singlePingBtn">Single Ping</button>
+                 <button class="btn btn-secondary" id="continuousPingBtn">Continuous Ping</button>
+             </div>
+             <div class="progress-container hidden" id="pingProgress">
+                 <div class="progress-bar"><div class="progress-fill" id="pingProgressFill"></div></div>
+                 <div class="progress-text" id="pingProgressText">Running test (0/5)</div>
+             </div>
+             <div class="result-area" id="pingResult">Ready to ping...</div>
+         </div>
+
+         <!-- Tab Content (Latency) -->
+         <div class="tab-content" id="latency-tab">
+             <div class="btn-group" id="latencyBtnGroup">
+                 <button class="btn btn-secondary" id="measureLatencyBtn">Measure Latency</button>
+                 <button class="btn btn-secondary" id="stopLatencyBtn" disabled>Stop</button> <!-- Initially disabled -->
+             </div>
+             <div class="progress-container hidden" id="latencyProgress">
+                <div class="progress-bar"><div class="progress-fill" id="latencyProgressFill"></div></div>
+                <div class="progress-text" id="latencyProgressText">Measuring latency...</div>
+             </div>
+             <div class="stats-grid">
+                 <div class="stat-card">
+                     <div class="stat-value" id="currentLatency">-</div><div class="stat-label">Current</div>
+                 </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="minLatency">-</div><div class="stat-label">Min</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="maxLatency">-</div><div class="stat-label">Max</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgLatency">-</div><div class="stat-label">Average</div>
+                </div>
+             </div>
+             <div class="result-area" id="latencyResult">Latency test results will appear here...</div>
+         </div>
+
+         <!-- Tab Content (Traceroute) -->
+         <div class="tab-content" id="traceroute-tab">
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="startTraceBtn">Trace Route</button>
+            </div>
+             <div class="progress-container hidden" id="traceProgress">
+                <div class="progress-bar"><div class="progress-fill" id="traceProgressFill"></div></div>
+                <div class="progress-text" id="traceProgressText">Tracing hops (0/30)</div>
+            </div>
+             <div class="result-area" id="traceResult">Traceroute results will appear here...</div>
+         </div>
+
+         <!-- Tab Content (DNS) -->
+         <div class="tab-content" id="dns-tab">
+              <div class="input-group" style="margin-bottom: 1rem;">
+                   <select id="dnsType">
+                       <option value="A">A</option>
+                       <option value="AAAA">AAAA</option>
+                       <option value="MX">MX</option>
+                       <option value="NS">NS</option>
+                       <option value="TXT">TXT</option>
+                       <option value="CNAME">CNAME</option>
+                   </select>
+                   <input type="text" id="dnsInput" placeholder="Domain (e.g. google.com)" value="google.com">
+                   <button id="dnsLookupBtn" class="btn btn-primary"><i class="bi bi-search"></i> Lookup</button>
+               </div>
+               <div class="progress-container hidden" id="dnsProgress">
+                   <div class="progress-bar"><div class="progress-fill" id="dnsProgressFill"></div></div>
+                   <div class="progress-text" id="dnsProgressText">Looking up DNS records...</div>
+               </div>
+               <div class="result-area" id="dnsResult">DNS query results will appear here...</div>
+         </div>
+
+    </div> <!-- End wrapping card -->
+
+    <script src="scripts.js"></script>
+</body>
+</html>
