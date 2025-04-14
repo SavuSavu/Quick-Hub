@@ -25,23 +25,31 @@
     </header>
 
     <main class="container">
-        <!-- Dashboard Content (Categories & Search) -->
-        <div class="dashboard-content">
-            <div class="search-bar-container">
-                <i class="bi bi-search search-icon"></i>
-                <input type="search" id="search-bar" placeholder="Search tools or categories...">
-            </div>
+        <div class="main-content-wrapper">
+            <!-- Dashboard Content (Categories & Search) -->
+            <div class="dashboard-content">
+                <div class="search-bar-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="search" id="search-bar" placeholder="Search tools or categories...">
+                </div>
 
-            <div id="category-container">
-                <!-- Categories will be injected here by JavaScript -->
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="spinner" style="border: 4px solid rgba(255, 255, 255, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 0.5rem;"></div>
-                    <p style="color: var(--gray);">Loading tools...</p>
+                <div id="category-container">
+                    <!-- Categories will be injected here by JavaScript -->
+                    <div style="text-align: center; padding: 2rem;">
+                        <div class="spinner" style="border: 4px solid rgba(255, 255, 255, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 0.5rem;"></div>
+                        <p style="color: var(--gray);">Loading tools...</p>
+                    </div>
+                </div>
+
+                <div id="no-results" class="hidden">
+                    <p>No results found for "<span id="search-term-display"></span>"</p>
                 </div>
             </div>
 
-            <div id="no-results" class="hidden">
-                <p>No results found for "<span id="search-term-display"></span>"</p>
+            <!-- Auto Tool Container for NVD_News on wider screens -->
+            <div id="auto-tool-container" class="auto-tool-container">
+                <!-- Removed the auto-tool-header to maximize space -->
+                <iframe id="auto-tool-iframe" src="about:blank" title="Vulnerability News"></iframe>
             </div>
         </div>
 

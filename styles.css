@@ -67,6 +67,20 @@ a:hover {
     padding: 0 1rem;
 }
 
+/* New wrapper for main content to display dashboard and auto tool side by side */
+.main-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .main-content-wrapper {
+        flex-direction: row;
+        gap: 1.5rem;
+    }
+}
+
 /* --- Header --- */
 header {
     background: var(--header-bg);
@@ -104,20 +118,27 @@ main {
     padding: 1.5rem 0;
     flex-grow: 1; /* Take remaining vertical space */
     display: flex; /* Enable flex for main content layout */
+    flex-direction: column; /* Stack components vertically by default */
     gap: 1.5rem; /* Space between sections */
 }
 
 .dashboard-content {
     flex: 1; /* Takes available space */
     min-width: 0; /* Prevents overflow issues with flex items */
-    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth hide/show */
+    transition: all 0.3s ease; /* Smooth transitions */
+    display: flex; /* Add flex display for centering */
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center children horizontally */
+    width: 100%; /* Ensure full width */
+    max-width: 800px; /* Limit maximum width */
+    margin: 0 auto; /* Center the dashboard content */
 }
+
 .dashboard-content.hidden { /* More specific hidden state for dashboard */
     opacity: 0;
     visibility: hidden;
     position: absolute; /* Remove from flow when hidden */
 }
-
 
 .tool-view {
     flex: 2; /* Takes more space when visible */
@@ -135,6 +156,8 @@ main {
     position: relative;
     margin-bottom: 1.5rem;
     display: flex;
+    width: 100%; /* Full width of parent */
+    max-width: 600px; /* Maximum width for the search bar */
 }
 
 .search-bar-container input {
@@ -170,9 +193,20 @@ main {
     margin-bottom: 1rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
+    width: 100%; /* Full width of parent */
+    max-width: 600px; /* Match search bar max-width */
 }
+
 .category-panel:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Category Container */
+#category-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center category panels */
 }
 
 .category-header {
@@ -256,12 +290,12 @@ main {
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
-    color: var(--text-color);
+    color: var (--text-color);
 }
 
 .tool-details p {
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: var (--text-muted);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -321,6 +355,8 @@ main {
     text-align: center;
     padding: 2rem;
     color: var(--gray);
+    width: 100%;
+    max-width: 600px; /* Match search bar max-width */
 }
 
 /* --- Footer --- */
@@ -376,13 +412,21 @@ footer {
     main {
        min-height: calc(100vh - 150px); /* Attempt to fill viewport height */
        align-items: stretch; /* Make dashboard/tool view same height */
+       justify-content: center; /* Center the content horizontally */
     }
-    .tool-list {
-        grid-template-columns: repeat(2, 1fr); /* Keep 2 columns, or adjust */
+    
+    .main-content-wrapper {
+        flex-direction: row; /* Side-by-side layout on wider screens */
+        align-items: stretch; /* Make children same height */
+        gap: 1rem; /* Add gap between dashboard and auto tool */
     }
+    
     .dashboard-content {
-        flex: 0 0 450px; /* Fixed width for dashboard on larger screens */
+        flex: 1; /* Allow dashboard to be responsive */
+        max-width: 600px; /* Limit maximum width */
         order: 1; /* Dashboard first */
+        margin: 0 auto; /* Keep centered */
+        align-items: center; /* Center children */
     }
     .dashboard-content.hidden { /* Adjust hidden state for flex */
         flex-basis: 0;
@@ -391,20 +435,75 @@ footer {
         overflow: hidden;
     }
 
+    .dashboard-content.with-auto-tool {
+        max-width: 500px; /* Slightly narrower when showing auto tool */
+    }
+
     .tool-view {
-        flex: 1; /* Allow tool view to take remaining space */
+        flex: 2; /* Allow tool view to take more space */
         order: 2; /* Tool view second */
+        margin-left: 1rem; /* Add some space between dashboard and tool view */
+    }
+
+    .auto-tool-container {
+        flex: 1.5; /* Slightly smaller than full tool view */
+        order: 2; /* Same order as tool view */
+        max-width: 600px; /* Limit maximum width */
+    }
+
+    .auto-tool-container.visible {
+        flex: 1;
+        min-width: 350px; /* Minimum width for the auto tool container */
+        max-width: 600px; /* Maximum width for the auto tool container */
+    }
+
+    /* When tool view is open, hide auto-tool */
+    .tool-view:not(.hidden) ~ .main-content-wrapper .auto-tool-container {
+        display: none !important;
+    }
+    
+    /* When tool view is open, make main content wrapper invisible */
+    .tool-view:not(.hidden) ~ .main-content-wrapper {
+        display: none;
     }
 }
+
 @media (min-width: 1200px) {
     .tool-list {
         grid-template-columns: repeat(2, 1fr); /* Keep 2 columns, maybe increase later */
     }
      .dashboard-content {
-        flex: 0 0 500px; /* Slightly wider dashboard */
-    }
+        max-width: 600px; /* Maintain consistent width */
+     }
+
+     .auto-tool-container.visible {
+        max-width: 700px; /* Allow more width on larger screens */
+     }
 }
 
+/* Auto Tool Container Styles */
+.auto-tool-container {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--bg-color);
+    overflow: hidden; /* Ensure content respects border radius */
+}
+
+.auto-tool-container.visible {
+    display: flex;
+    height: auto; /* Expand to content height */
+}
+
+#auto-tool-iframe {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    min-height: 500px;
+    background: var(--bg-color);
+}
 
 /* === Styles needed for internal tools (scoped within .tool-page if needed) === */
 
@@ -767,4 +866,28 @@ body.tool-page .card h4 { /* Summary heading */
      color: var(--text-muted);
      margin-bottom: 0.5rem;
      font-weight: 600;
+}
+
+/* --- Auto-loaded Tool Container --- */
+.auto-tool-container {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--bg-color);
+    margin-left: 1rem;
+    overflow: hidden; /* Ensure content respects border radius */
+}
+
+.auto-tool-container.visible {
+    display: flex;
+}
+
+#auto-tool-iframe {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    min-height: 500px;
+    background: var(--bg-color);
 }

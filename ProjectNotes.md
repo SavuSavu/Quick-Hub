@@ -21,16 +21,25 @@ Integrate three separate web applications (SBOM Analyzer, NetScan Pro "NOT-PING"
 4.  **UI Structure:**
     *   Simplified the main Quick-Hub layout. Removed the original sidebar concept in favor of showing categories/tools directly in the main content area.
     *   Introduced a dedicated view (`#tool-view`) to host the iframe, which is shown/hidden as needed.
+    *   Added responsive side-by-side layout with auto-loaded NVD_News (Vulnews) tool that appears when viewport is wide enough.
 5.  **Tool Adaptation:**
     *   Modified `BOMStorm`'s HTML to fit within the theme (using cards, common button styles) and removed its header/footer. Critically updated its Cytoscape styling in JS to use the new CSS variables. Adapted its tab switching logic for the new structure.
     *   Modified `NOT-PING`'s HTML similarly, removing header/footer and relying on the main CSS. Minor JS adjustments for CSS compatibility (e.g., connection bars). Removed less relevant sections (Network Info, History) for the iframe context.
+    *   Created a streamlined "results-only.html" for NVD_News to display just vulnerability data in the auto-tool panel, enabling more efficient use of screen space.
 6.  **Framework:** Stuck to vanilla HTML, CSS, and JavaScript as per the original examples provided.
+7.  **Auto-Tool Feature:**
+    *   Implemented automatic loading of the NVD_News (Vulnews) tool in a side panel on wider screens.
+    *   Added viewport width detection to show/hide the auto-tool panel based on available space.
+    *   Created responsive layout that adjusts the dashboard width when the auto-tool panel is visible.
+    *   Implemented smart loading of vulnerability news with a results-focused view to maximize information density.
 
 ## Challenges
 
 *   **CSS Specificity/Cascading:** Ensuring the main `styles.css` applied correctly within the iframed tools without major conflicts required careful selector choices and removing the tools' original CSS.
 *   **Cytoscape Styling:** Adapting the hardcoded color values in `BOMStorm`'s JavaScript to use CSS variables required careful mapping and testing.
 *   **Iframe Communication (Not Implemented):** For more advanced features (e.g., passing search terms *into* a tool), iframe communication mechanisms (like `postMessage`) would be needed, adding complexity. This was kept simple for now.
+*   **Responsive Layout:** Creating a flexible layout that accommodates both the main dashboard and the auto-tool panel required careful CSS planning, particularly for different viewport sizes.
+*   **Auto-Tool Loading:** Determining the appropriate conditions to show the auto-tool and ensuring it behaves correctly when switching between different views.
 
 ## Future Enhancements
 
@@ -40,3 +49,5 @@ Integrate three separate web applications (SBOM Analyzer, NetScan Pro "NOT-PING"
 *   **More Tools:** Integrate actual functionality for the placeholder tools.
 *   **Error Handling:** More robust error handling for `tools.json` fetching and iframe loading.
 *   **Accessibility:** Perform a thorough accessibility audit.
+*   **Auto-Tool Configuration:** Allow users to select which tool appears in the auto-tool panel.
+*   **Synchronization:** Implement communication between the main dashboard and auto-tool panel (e.g., filtering vulnerability results based on dashboard context).

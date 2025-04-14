@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnews Results | Quick-Hub</title>
+    <!-- Link to Quick-Hub's main CSS -->
+    <link rel="stylesheet" href="../../styles.css">
+    <!-- Bootstrap Icons (needed for main styles) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Original CSS files -->
+    <link rel="stylesheet" href="css/tailwind-core.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Reset some styles for the focused view */
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+        }
+        .card {
+            box-shadow: none;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        /* Results section specific styles */
+        #resultsSection {
+            padding: 0.5rem;
+        }
+        /* Spinner style matching Quick-Hub */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid var(--primary, #3b82f6);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-primary {
+            background-color: var(--primary, #3b82f6);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark, #2563eb);
+        }
+        .btn-secondary {
+            background-color: var(--secondary-bg, #e5e7eb);
+            color: var(--text-color, #1f2937);
+        }
+        .btn-secondary:hover {
+            background-color: var(--secondary-bg-hover, #d1d5db);
+        }
+        /* Hide the info button in this view */
+        #infoBtn {
+            display: none;
+        }
+    </style>
+</head>
+<body class="tool-page">
+    <div class="card">
+        <!-- Only include the Results Section -->
+        <div id="resultsSection">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Vulnerabilities</h2>
+                <div class="flex items-center gap-4">
+                    <div class="text-gray-500" id="resultCount">0 results</div>
+                    <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors" title="Toggle Dark Mode">
+                        <i class="fas fa-moon text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12">
+                <div class="spinner"></div>
+                <p class="text-gray-600 mt-4">Fetching vulnerability data...</p>
+            </div>
+
+            <!-- Error Container -->
+            <div id="errorContainer" class="status error-message bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded hidden">
+                <p id="errorMessage"></p>
+            </div>
+
+            <!-- List View -->
+            <div id="listView">
+                <div class="grid grid-cols-1 gap-4" id="vulnerabilityList"></div>
+            </div>
+
+            <!-- Detail View (hidden by default) -->
+            <div id="detailView" class="hidden">
+                <button id="backToListBtn" class="btn btn-secondary mb-4 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                    <i class="fas fa-arrow-left"></i> Back to list
+                </button>
+                <div class="bg-white rounded-lg shadow-md p-6 card-shadow" id="vulnerabilityDetail"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden elements needed for JavaScript compatibility -->
+    <div style="display:none;">
+        <div id="severityFilters"></div>
+        <div id="sourceFilters"></div>
+        <input type="text" id="searchInput">
+        <button id="refreshBtn"></button>
+        <div id="apiKeySection">
+            <input type="text" id="nvdApiKey">
+            <input type="text" id="githubApiKey">
+            <button id="saveApiKeyBtn"></button>
+        </div>
+        <div id="infoBtn"></div>
+        <div id="infoModal">
+            <button id="closeInfoModalBtn"></button>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/apiService.js"></script>
+    <script>
+        // Override the uiManager's setupEventListeners function before it's loaded
+        // This will prevent errors when it tries to access elements that don't exist in this view
+        window.overrideSetupEventListeners = function() {
+            uiManager.setupEventListeners = function() {
+                // Only set up events for elements that actually exist in this view
+                
+                // Back to list button
+                if (this.elements.backToListBtn) {
+                    this.elements.backToListBtn.addEventListener('click', () => {
+                        this.appState.currentView = 'list';
+                        this.renderView();
+                    });
+                }
+
+                // Dark mode toggle
+                if (this.elements.darkModeToggle) {
+                    this.elements.darkModeToggle.addEventListener('click', () => {
+                        this.toggleDarkMode();
+                    });
+                }
+                
+                // Skip other event listeners that refer to elements not in this view
+                console.log("Using simplified event listeners for results-only view");
+            };
+        };
+        
+        window.overrideSetupEventListeners();
+    </script>
+    <script src="js/uiManager.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Check if the parent window has dark theme and sync on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the UI with just the results section
+            // This will automatically fetch data when the page loads
+            
+            // Check parent theme and sync
+            try {
+                if (window.parent && window.parent.document.documentElement.classList.contains('dark-theme')) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.add('bg-gray-900');
+                    document.documentElement.classList.remove('bg-gray-50');
+                    const icon = document.querySelector('#darkModeToggle i');
+                    if (icon) {
+                        icon.classList.replace('fa-moon', 'fa-sun');
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not check parent frame theme', e);
+            }
+        });
+    </script>
+</body>
+</html>

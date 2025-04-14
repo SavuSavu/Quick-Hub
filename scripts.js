@@ -10,10 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const iframeTitle = document.getElementById('iframe-title');
     const iframeCloseBtn = document.getElementById('iframe-close-btn');
     const dashboardContent = document.querySelector('.dashboard-content'); // Reference to the container holding search/categories
+    
+    // Auto-tool elements
+    const autoToolContainer = document.getElementById('auto-tool-container');
+    const autoToolIframe = document.getElementById('auto-tool-iframe');
+    const autoToolToggleBtn = document.getElementById('auto-tool-toggle-btn');
 
     // State
     let allToolsData = [];
     let expandedState = {}; // { categoryId: boolean }
+    let isAutoToolCollapsed = false; // Track if auto-tool is collapsed
 
     // Icons
     const icons = {
@@ -21,7 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
         chevronDown: '<i class="bi bi-chevron-down"></i>',
         externalLink: '<i class="bi bi-box-arrow-up-right"></i>',
         iframe: '<i class="bi bi-layout-text-window-reverse"></i>', // Changed icon
-        placeholder: '<i class="bi bi-gear"></i>'
+        placeholder: '<i class="bi bi-gear"></i>',
+        collapse: '<i class="bi bi-arrows-collapse"></i>',
+        expand: '<i class="bi bi-arrows-expand"></i>'
     };
 
     // --- Helper Functions ---
@@ -113,6 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toolIframe.src = url;
         toolView.classList.remove('hidden');
         dashboardContent.classList.add('hidden'); // Hide dashboard instead of setting display:none
+        if (autoToolContainer) {
+            autoToolContainer.classList.remove('visible'); // Hide auto-tool when opening full tool view
+        }
         window.scrollTo(0, 0);
     }
 
@@ -121,6 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
         iframeTitle.textContent = '';
         toolView.classList.add('hidden');
         dashboardContent.classList.remove('hidden'); // Show dashboard again
+        
+        // Check if we should show the auto-tool again when closing tool view
+        checkAndLoadAutoTool();
     }
 
     function handleToolClick(event) {
@@ -157,6 +171,75 @@ document.addEventListener('DOMContentLoaded', () => {
         iconDiv.innerHTML = isNowExpanded ? icons.chevronDown : icons.chevronRight;
     }
 
+    // Function to check screen width and load auto-tool if appropriate
+    function checkAndLoadAutoTool() {
+        // Verify that all required elements exist
+        if (!dashboardContent || !autoToolContainer || !autoToolIframe || !toolView) {
+            console.warn("Required DOM elements for auto-tool feature are missing");
+            return;
+        }
+
+        const minWidthForAutoTool = 1024; // Minimum width in pixels
+        const isWideScreen = window.innerWidth >= minWidthForAutoTool;
+        const isToolViewOpen = !toolView.classList.contains('hidden');
+        
+        // Check if NVD_News tool exists in our data
+        let nvdNewsUrl = null;
+        let nvdNewsResultsOnlyUrl = null;
+        if (allToolsData.length > 0) {
+            // Look for the NVD_News tool
+            for (const category of allToolsData) {
+                const nvdNews = category.tools.find(tool => 
+                    (tool.url && tool.url.includes('NVD_News')) || 
+                    (tool.name && tool.name.toLowerCase().includes('vulnews')) ||
+                    (tool.name && tool.name.toLowerCase().includes('vulnerability'))
+                );
+                if (nvdNews) {
+                    nvdNewsUrl = nvdNews.url;
+                    // Create the URL for the results-only view
+                    nvdNewsResultsOnlyUrl = nvdNewsUrl.replace('index.html', 'results-only.html');
+                    if (!nvdNewsResultsOnlyUrl.includes('results-only.html')) {
+                        // If URL doesn't end with a filename, append results-only.html
+                        nvdNewsResultsOnlyUrl = nvdNewsUrl + (nvdNewsUrl.endsWith('/') ? '' : '/') + 'results-only.html';
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Update classes based on conditions
+        if (isWideScreen && !isToolViewOpen && nvdNewsResultsOnlyUrl && !isAutoToolCollapsed) {
+            // Load NVD_News results-only view if screen is wide enough and tool view isn't open
+            dashboardContent.classList.add('with-auto-tool');
+            autoToolContainer.classList.add('visible');
+            
+            // Only set src if it's not already loaded (to prevent unnecessary reloads)
+            if (autoToolIframe.src === 'about:blank' || !autoToolIframe.src.includes('results-only.html')) {
+                autoToolIframe.src = nvdNewsResultsOnlyUrl;
+            }
+        } else {
+            // Hide auto-tool if conditions aren't met
+            dashboardContent.classList.remove('with-auto-tool');
+            autoToolContainer.classList.remove('visible');
+        }
+    }
+
+    function toggleAutoTool() {
+        isAutoToolCollapsed = !isAutoToolCollapsed;
+        
+        // Update button icon
+        autoToolToggleBtn.innerHTML = isAutoToolCollapsed ? icons.expand : icons.collapse;
+        
+        if (isAutoToolCollapsed) {
+            // Hide the auto tool
+            dashboardContent.classList.remove('with-auto-tool');
+            autoToolContainer.classList.remove('visible');
+        } else {
+            // Show the auto tool again
+            checkAndLoadAutoTool();
+        }
+    }
+
     // Centralized function to attach listeners
     function attachEventListeners() {
         // Tool item clicks
@@ -191,6 +274,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     iframeCloseBtn.addEventListener('click', closeToolView);
+    
+    // Auto tool toggle button listener
+    if (autoToolToggleBtn) {
+        autoToolToggleBtn.addEventListener('click', toggleAutoTool);
+    }
+    
+    // Listen for window resize events
+    window.addEventListener('resize', checkAndLoadAutoTool);
 
     // --- Initialisation ---
     async function initializeApp() {
@@ -206,6 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             allToolsData = data.categories;
             renderCategories(allToolsData);
+            
+            // Check if we should load the auto-tool after data is loaded
+            setTimeout(checkAndLoadAutoTool, 500); // Small delay to ensure everything is rendered
         } catch (error) {
             console.error("Error fetching or parsing tools.json:", error);
             categoryContainer.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 2rem;">Error loading tools data. Please check tools.json and ensure it's accessible.</p>`;

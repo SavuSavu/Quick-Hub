@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnews | Quick-Hub</title>
+    <!-- Link to Quick-Hub's main CSS -->
+    <link rel="stylesheet" href="../../styles.css">
+    <!-- Bootstrap Icons (needed for main styles) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Original CSS files -->
+    <link rel="stylesheet" href="css/tailwind-core.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool-page">
+    <div class="card">
+        <h1 class="text-2xl font-bold mb-2">Vulnerability Intelligence Dashboard</h1>
+        <p class="text-gray-600 mb-6">Get real-time security vulnerability data from NVD and GitHub</p>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Filter Controls -->
+            <div class="card-shadow p-4 mb-6 rounded-lg bg-white"> 
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold mb-2">Severity Level</h2>
+                    <div class="flex flex-wrap gap-2" id="severityFilters">
+                        <button class="severity-btn px-4 py-2 rounded-full severity-critical font-medium" data-severity="CRITICAL">Critical</button>
+                        <button class="severity-btn px-4 py-2 rounded-full severity-high font-medium" data-severity="HIGH">High</button>
+                        <button class="severity-btn px-4 py-2 rounded-full severity-medium font-medium" data-severity="MEDIUM">Medium</button>
+                        <button class="severity-btn px-4 py-2 rounded-full severity-low font-medium" data-severity="LOW">Low</button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold mb-2">Data Sources</h2>
+                    <div class="flex flex-wrap gap-2" id="sourceFilters">
+                        <button class="source-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 font-medium transition-colors" data-source="NVD">NVD</button>
+                        <button class="source-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 font-medium transition-colors" data-source="GITHUB">GitHub</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </span>
+                        <input type="text" id="searchInput" placeholder="Search vulnerabilities..." 
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="refreshBtn" class="btn btn-primary px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button id="showApiBtn" class="btn btn-secondary px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                            <i class="fas fa-key"></i> API Keys
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 hidden">
+                <div class="spinner"></div>
+                <p class="text-gray-600 mt-4">Fetching vulnerability data...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorContainer" class="status error-message bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded hidden">
+                <p id="errorMessage"></p>
+            </div>
+
+            <!-- API Key Input (hidden by default) -->
+            <div id="apiKeySection" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded hidden">
+                <p class="mb-2"><strong>API Access Note:</strong> Some sources require API keys.</p>
+                <div class="flex flex-col gap-2 mb-3">
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input type="text" id="nvdApiKey" placeholder="NVD API Key (optional)" class="flex-1 px-4 py-2 border border-gray-300 rounded">
+                        <a href="https://nvd.nist.gov/developers/request-an-api-key" target="_blank" class="text-xs md:text-sm text-blue-700 hover:text-blue-900 md:self-center">Get NVD Key</a>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input type="text" id="githubApiKey" placeholder="GitHub API Token (optional)" class="flex-1 px-4 py-2 border border-gray-300 rounded">
+                        <a href="https://github.com/settings/tokens" target="_blank" class="text-xs md:text-sm text-blue-700 hover:text-blue-900 md:self-center">Get GitHub Token</a>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="saveApiKeyBtn" class="btn btn-primary px-4 py-2 rounded transition-colors">
+                        Save Keys
+                    </button>
+                </div>
+                <p class="mt-2 text-sm">Keys are stored locally in your browser only.</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Vulnerabilities</h2>
+                    <div class="flex items-center gap-4">
+                        <div class="text-gray-500" id="resultCount">0 results</div>
+                        <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors" title="Toggle Dark Mode">
+                            <i class="fas fa-moon text-gray-700"></i>
+                        </button>
+                        <button id="infoBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors" title="About Vulnews">
+                            <i class="fas fa-info-circle text-gray-700"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div id="listView">
+                    <div class="grid grid-cols-1 gap-4" id="vulnerabilityList"></div>
+                </div>
+
+                <!-- Detail View (hidden by default) -->
+                <div id="detailView" class="hidden">
+                    <button id="backToListBtn" class="btn btn-secondary mb-4 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                        <i class="fas fa-arrow-left"></i> Back to list
+                    </button>
+                    <div class="bg-white rounded-lg shadow-md p-6 card-shadow" id="vulnerabilityDetail"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Info Modal (hidden by default) -->
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold">About Vulnews</h3>
+                    <button id="closeInfoModalBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <p>Vulnews is a lightweight vulnerability intelligence tool that aggregates data from multiple sources in real-time.</p>
+                    
+                    <h4 class="text-lg font-semibold">Features</h4>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Real-time vulnerability data from NVD and GitHub Advisories</li>
+                        <li>Filter by severity level (Critical, High, Medium, Low)</li>
+                        <li>Search across vulnerability descriptions and IDs</li>
+                        <li>Detailed view for each vulnerability</li>
+                        <li>Dark mode support</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold">Technology</h4>
+                    <p>Built with pure HTML, CSS, and JavaScript using the fetch API to retrieve data directly from public vulnerability databases.</p>
+
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h4 class="text-lg font-semibold text-blue-800 mb-2">Note about API Limits</h4>
+                        <p class="text-blue-700">This application makes direct API calls from your browser. Some APIs have rate limits that might affect functionality if exceeded. For full access, consider providing your own API keys in the settings.</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-500">Version 1.0.0 | Data sources may have delays. Always verify critical vulnerabilities from official sources.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/apiService.js"></script>
+    <script src="js/uiManager.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Check if the parent window has dark theme and sync on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Handle API keys button click
+            document.getElementById('showApiBtn').addEventListener('click', () => {
+                const apiKeySection = document.getElementById('apiKeySection');
+                if (apiKeySection) {
+                    apiKeySection.classList.toggle('hidden');
+                }
+            });
+            
+            // Check parent theme and sync
+            try {
+                if (window.parent && window.parent.document.documentElement.classList.contains('dark-theme')) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.add('bg-gray-900');
+                    document.documentElement.classList.remove('bg-gray-50');
+                    const icon = document.querySelector('#darkModeToggle i');
+                    if (icon) {
+                        icon.classList.replace('fa-moon', 'fa-sun');
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not check parent frame theme', e);
+            }
+        });
+    </script>
+
+    <style>
+        /* Spinner style matching Quick-Hub */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid var(--primary, #3b82f6);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Quick-Hub button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-primary {
+            background-color: var(--primary, #3b82f6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark, #2563eb);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-bg, #e5e7eb);
+            color: var(--text-color, #1f2937);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-bg-hover, #d1d5db);
+        }
+    </style>
+</body>
+</html>

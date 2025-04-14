@@ -7,15 +7,16 @@ A centralized dashboard for accessing various web-based utilities and tools, bui
 *   **Unified Interface:** Provides a consistent look and feel across different tools.
 *   **Dynamic Tool Loading:** Loads available tools and categories from `tools.json`.
 *   **Tool Integration:** Supports embedding tools via iframes or linking to external URLs.
+*   **Auto-Load Vulnerability News:** Automatically displays real-time vulnerability data in a side panel on wider screens.
+*   **Responsive Split-View Layout:** Adapts to screen size, showing both the dashboard and vulnerability feed side-by-side when space permits.
 *   **Search Functionality:** Quickly find tools or categories.
-*   **Responsive Design:** Adapts to different screen sizes.
 *   **Dark Theme:** Uses a dark color scheme for comfortable viewing.
 
-## Included Tools (Examples)
+## Included Tools
 
 *   **BOMStorm:** Analyzes CycloneDX XML Software Bill of Materials (SBOMs).
-*   **NetScan Pro (Simulation):** Simulates network tests like Ping, Latency, Trace Route, and DNS lookups.
-*   **(Placeholders):** JSON Analyzer, Binary Analyzer, Network Scanner.
+*   **NetScan Pro (NOT-PING):** Simulates network tests like Ping, Latency, Trace Route, and DNS lookups.
+*   **Vulnews:** Real-time vulnerability intelligence aggregator from NVD and GitHub sources (auto-loads in side panel on wider screens).
 
 ## Project Structure
 Quick-Hub/
@@ -26,23 +27,22 @@ Quick-Hub/
 ├── README.md # This file
 ├── ProjectNotes.md # Development notes
 └── tools/ # Directory containing individual tools
-├── BOMStorm/
-│ ├── index.html
-│ └── scripts.js
-├── NOT-PING/
-│ ├── index.html
-│ └── scripts.js
-└── Binary-Analyzer/
-└── index.html
+    ├── BOMStorm/
+    │   ├── index.html
+    │   └── scripts.js
+    ├── NOT-PING/
+    │   ├── index.html
+    │   └── scripts.js
+    └── NVD_News/
+        ├── index.html
+        ├── results-only.html # Streamlined view for side panel display
+        ├── css/
+        └── js/
 
 ## Running Locally
 
 1.  Clone or download this repository.
 2.  Open the main `index.html` file in your web browser.
-    *   For full functionality (especially fetching `tools.json`), it's recommended to serve the files using a simple local web server (e.g., Python's `http.server`, Node.js's `serve` or `live-server`).
-      *   Using Python: `python -m http.server` (Python 3) or `python -m SimpleHTTPServer` (Python 2) in the project root directory.
-      *   Using Node.js/npm: `npx serve` or `npx live-server`.
-3.  Navigate to the server address (e.g., `http://localhost:8000` or `http://127.0.0.1:8080`).
 
 ## Customization
 
