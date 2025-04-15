@@ -1,78 +1,67 @@
-/* Vulnews Foundation Styles */
+/* NVD_News - Integrated Styles */
 
 /* Animations */
 .fade-in {
     animation: fadeIn 0.3s ease-in-out;
 }
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .rotate {
     animation: rotate 2s linear infinite;
 }
-
 @keyframes rotate {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-/* Severity color coding */
-.severity-critical {
-    background-color: #ef4444;
-    color: white;
+/* Filter Controls Card - Consistent with Quick-Hub */
+.card-shadow.p-4.mb-6.rounded-lg {
+    background-color: var(--card-bg); /* Use Quick-Hub card background */
+    color: var(--text-color); /* Use Quick-Hub text color */
+    border: 1px solid var(--border-color); /* Use Quick-Hub border color */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.severity-high {
-    background-color: #f97316;
-    color: white;
-}
-
-.severity-medium {
-    background-color: #eab308;
-    color: black;
-}
-
-.severity-low {
-    background-color: #84cc16;
-    color: black;
-}
-
-/* Utility classes */
+/* Card Styles - Now using Quick-Hub's .card */
 .card-shadow {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Quick-Hub Integration Styles */
-.tool-page {
-    padding: 0;
-    margin: 0;
+#vulnerabilityDetail.bg-white.rounded-lg.shadow-md.p-6.card-shadow,
+#vulnerabilityDetail.bg-white.rounded-lg.shadow-md.p-6.card-shadow *{
+    background-color: rgb(45, 45, 45);
+    color: white;
 }
 
-.tool-page .card {
-    background-color: var(--card-bg, #ffffff);
-    border-radius: var(--card-radius, 8px);
-    border: var(--card-border, 1px solid #e0e0e0);
-    padding: var(--card-padding, 1.5rem);
-    margin-bottom: 1rem;
+.vulnerability-card.bg-white.rounded-lg.shadow-md.p-4.hover\:shadow-lg.transition-shadow.cursor-pointer.card-shadow.fade-in {
+    background-color: rgb(45, 45, 45);
+    color: white;
+}
+.vulnerability-card.bg-white.rounded-lg.shadow-md.p-4.hover\:shadow-lg.transition-shadow.cursor-pointer.card-shadow.fade-in *{
+    color: white;
 }
 
-/* Button Styling to match Quick-Hub */
-.source-btn, .severity-btn {
-    font-size: 0.9rem;
-    font-weight: 500;
+/* Button Styling to match Quick-Hub - Simplified */
+.source-btn, 
+.severity-btn {
+    padding: 0.5rem 1rem; /* Match Quick-Hub's padding */
+    border-radius: 8px; /* Match Quick-Hub */
+    font-weight: 600; /* Same as main buttons */
+    border: none; /* No default borders */
     transition: all 0.2s ease;
 }
-
-button {
-    cursor: pointer;
+.source-btn.active, 
+.severity-btn.active {
+    background-color: var(--primary); /* Active button in primary color */
+    color: white; /* White text on active */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Slight shadow */
 }
 
-.source-btn.active, .severity-btn.active {
-    transform: scale(1.05);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+.source-btn, .severity-btn{
+    background-color: var(--input-bg);
+    color: var(--text-color);
 }
 
 /* Dark mode styles - harmonize with Quick-Hub */
@@ -80,53 +69,21 @@ button {
     background-color: var(--bg-dark, #1f2937);
     color: var(--text-color, #f9fafb);
 }
-
 .dark .bg-white {
     background-color: var(--card-bg-dark, #374151) !important;
 }
-
 .dark .text-gray-800 {
     color: var(--text-color, #f3f4f6) !important;
 }
-
-.dark .text-gray-600, 
-.dark .text-gray-500, 
-.dark .text-gray-700 {
+.dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700 {
     color: var(--text-muted, #d1d5db) !important;
 }
-
 .dark .bg-gray-50 {
     background-color: var(--bg-dark, #4b5563) !important;
 }
-
 .dark .bg-gray-200 {
     background-color: var(--input-bg-dark, #6b7280) !important;
 }
-
 .dark .border-gray-300 {
     border-color: var(--border-color-dark, #6b7280) !important;
-}
-
-/* Integrate with Quick-Hub search styling */
-#searchInput {
-    border: var(--input-border, 1px solid #e0e0e0);
-    background-color: var(--input-bg, white);
-    color: var(--text-color, inherit);
-}
-
-.dark #searchInput {
-    border-color: var(--border-color-dark, #6b7280);
-    background-color: var(--input-bg-dark, #4b5563);
-    color: var(--text-color, #f3f4f6);
-}
-
-/* Mobile-first responsive design */
-@media (min-width: 768px) {
-    .md\:flex-row {
-        flex-direction: row;
-    }
-
-    .md\:grid-cols-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 }
