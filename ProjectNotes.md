@@ -33,6 +33,14 @@ Integrate three separate web applications (SBOM Analyzer, NetScan Pro "NOT-PING"
     *   Created responsive layout that adjusts the dashboard width when the auto-tool panel is visible.
     *   Implemented smart loading of vulnerability news with a results-focused view to maximize information density.
 
+## Newly Integrated Tool: XSS Prober (Injections)
+
+* **XSS Prober** (tools/Maybe_My_XSS/index.html)
+    * Category: Injections
+    * Description: Test for reflected and DOM-based XSS vulnerabilities by injecting payloads into URLs and fragments. Manual inspection required due to browser security restrictions.
+    * Integrated as an iframe tool via tools.json.
+    * See tools/Maybe_My_XSS/projectNotes.md for technical notes and limitations.
+
 ## Challenges
 
 *   **CSS Specificity/Cascading:** Ensuring the main `styles.css` applied correctly within the iframed tools without major conflicts required careful selector choices and removing the tools' original CSS.

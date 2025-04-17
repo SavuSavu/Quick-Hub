@@ -1,0 +1,155 @@
+/* style.css */
+
+/* Add any custom styles here that are not easily achievable with Tailwind */
+/* For now, most styling is handled by Tailwind utility classes and inline styles in the HTML */
+
+/* Example: Add a subtle animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Ensure iframe container maintains aspect ratio if needed, or specific dimensions */
+#iframe-container {
+    position: relative;
+    /* Add padding-top to control aspect ratio if needed, e.g., padding-top: 56.25%; for 16:9 */
+}
+
+#target-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Improve focus states slightly */
+input:focus, select:focus, button:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* Tailwind blue-500 focus ring */
+}
+
+/* Log entry styling */
+.log-entry {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #374151; /* gray-700 */
+    word-wrap: break-word; /* Ensure long URLs/payloads wrap */
+}
+.log-entry:last-child {
+    border-bottom: none;
+}
+.log-time {
+    color: #9ca3af; /* gray-400 */
+    margin-right: 0.5rem;
+    font-size: 0.75rem; /* text-xs */
+}
+.log-info { color: #60a5fa; /* blue-400 */ }
+.log-warn { color: #facc15; /* yellow-400 */ }
+.log-error { color: #f87171; /* red-400 */ }
+.log-payload { color: #a78bfa; /* violet-400 */ font-family: monospace; }
+.log-url { color: #34d399; /* green-400 */ }
+
+/* Quick-Hub Theme Integration */
+:root {
+    --primary: #4361ee;
+    --primary-dark: #3a56d4;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --danger: #f72585;
+    --warning: #f8961e;
+    --light: #f8f9fa;
+    --dark: #121212;
+    --gray: #6c757d;
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --card-hover-bg: #2a2a2a;
+    --text-color: #e0e0e0;
+    --text-muted: #8b949e;
+    --border-color: #333;
+    --input-bg: #2d2d2d;
+    --result-bg: #252525;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Card style for panels */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border-color);
+}
+
+/* Button styles */
+.btn {
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    background-color: var(--primary);
+    color: white;
+}
+.btn:hover {
+    background-color: var(--primary-dark);
+}
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+input, select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    outline: none;
+}
+input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
+}
+
+/* Iframe styling */
+#target-iframe {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+}
+
+/* Log area */
+#results-log {
+    background-color: var(--result-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+}
+
+/* Message box */
+.message-box {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+

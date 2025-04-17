@@ -117,7 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openToolView(url, name) {
-        iframeTitle.textContent = name;
+        // Update the new header: logo + Quick-Hub + tool name
+        const iframeTitle = document.getElementById('iframe-title');
+        if (iframeTitle) {
+            iframeTitle.textContent = name;
+        }
         toolIframe.src = url;
         toolView.classList.remove('hidden');
         dashboardContent.classList.add('hidden'); // Hide dashboard instead of setting display:none

@@ -145,6 +145,22 @@ main {
     display: flex; /* Use flex to contain the iframe */
     flex-direction: column;
     min-width: 0;
+    /* Make tool-view take up almost the whole viewport when visible */
+    position: fixed;
+    top: 1.5%;
+    left: 2.5%;
+    width: 95vw;
+    height: 97vh;
+    max-width: 95vw;
+    max-height: 97vh;
+    z-index: 2000;
+    background: rgba(18, 18, 18, 0.92); /* Slight transparency for modern look */
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, width 0.2s, height 0.2s;
 }
 
 .tool-view.hidden {
@@ -313,20 +329,35 @@ main {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-bottom: none;
-    border-radius: 12px 12px 0 0;
+    border-radius: 16px 16px 0 0;
     padding: 0.75rem 1.25rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
+}
+
+.iframe-header .quickhub-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.iframe-header .quickhub-logo i {
+    font-size: 1.5rem;
 }
 
 .iframe-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-color);
+    margin-left: 1.5rem;
 }
 
 .iframe-close-btn {
+    margin-left: auto;
     background: none;
     border: none;
     color: var(--gray);
@@ -345,7 +376,7 @@ main {
     height: 100%; /* Let flexbox handle height */
     border: 1px solid var(--border-color);
     border-top: none;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 16px 16px;
     background-color: var(--bg-color); /* Ensure iframe bg matches */
 }
 

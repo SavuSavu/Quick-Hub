@@ -41,6 +41,20 @@
             "type": "iframe"
           }
         ]
+      },
+      {
+        "id": "injections",
+        "name": "Injections",
+        "icon": "bi-bug",
+        "tools": [
+          {
+            "id": "xss-prober",
+            "url": "tools/Maybe_My_XSS/index.html",
+            "name": "XSS Prober",
+            "description": "Test for reflected and DOM-based XSS vulnerabilities by injecting payloads into URLs and fragments.",
+            "type": "iframe"
+          }
+        ]
       }
     ]
   }
