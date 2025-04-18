@@ -312,3 +312,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeApp();
 });
+
+// --- Quick-Hub Disclaimer Modal Logic ---
+(function disclaimerModalLogic() {
+    const modal = document.getElementById('qh-disclaimer-modal');
+    const acceptBtn = document.getElementById('qh-modal-accept');
+    const closeBtn = document.getElementById('qh-modal-close');
+    const MODAL_KEY = 'qh_disclaimer_accepted_v1';
+
+    function hideModal() {
+        if (modal) modal.setAttribute('hidden', '');
+    }
+    function showModal() {
+        if (modal) modal.removeAttribute('hidden');
+    }
+    function acceptDisclaimer() {
+        localStorage.setItem(MODAL_KEY, 'yes');
+        hideModal();
+    }
+    // Only show modal if not accepted before
+    if (modal && !localStorage.getItem(MODAL_KEY)) {
+        showModal();
+        // Prevent interaction with rest of app while modal is open
+        document.body.style.overflow = 'hidden';
+        acceptBtn?.addEventListener('click', () => {
+            acceptDisclaimer();
+            document.body.style.overflow = '';
+        });
+        closeBtn?.addEventListener('click', () => {
+            acceptDisclaimer();
+            document.body.style.overflow = '';
+        });
+        // Allow clicking outside modal content to dismiss
+        modal.addEventListener('mousedown', (e) => {
+            if (e.target === modal) {
+                acceptDisclaimer();
+                document.body.style.overflow = '';
+            }
+        });
+    } else {
+        hideModal();
+    }
+})();

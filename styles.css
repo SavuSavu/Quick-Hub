@@ -67,18 +67,48 @@ a:hover {
     padding: 0 1rem;
 }
 
+main.container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0;
+}
+
 /* New wrapper for main content to display dashboard and auto tool side by side */
 .main-content-wrapper {
     display: flex;
     flex-direction: column;
     width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 @media (min-width: 1024px) {
     .main-content-wrapper {
         flex-direction: row;
         gap: 1.5rem;
+        flex: 1 1 auto;
+        min-height: 0;
     }
+}
+
+/* --- Banner Styles --- */
+.main-banner {
+    width: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    color: #fff;
+    padding: 1.1rem 0 1rem 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+    margin-bottom: 0;
+}
+.main-banner .banner-text {
+    font-weight: 500;
+    font-size: 1.15rem;
+    letter-spacing: 0.01em;
 }
 
 /* --- Header --- */
@@ -360,7 +390,7 @@ main {
     margin-left: auto;
     background: none;
     border: none;
-    color: var(--gray);
+    color: var (--gray);
     font-size: 1.5rem;
     cursor: pointer;
     line-height: 1;
@@ -921,4 +951,88 @@ body.tool-page .card h4 { /* Summary heading */
     border: none;
     min-height: 500px;
     background: var(--bg-color);
+}
+
+/* --- Quick-Hub Disclaimer Modal Styles --- */
+.qh-modal-overlay {
+    position: fixed;
+    z-index: 9999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(18, 18, 18, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+}
+.qh-modal-overlay[hidden] {
+    display: none !important;
+}
+.qh-modal-content {
+    background: var(--card-bg, #23272f);
+    color: var(--text-color, #fff);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    padding: 2.5rem 2rem 2rem 2rem;
+    max-width: 420px;
+    width: 95vw;
+    text-align: center;
+    position: relative;
+    border: 2px solid var(--primary, #4361ee);
+    animation: fadeIn 0.5s;
+}
+.qh-modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1.2rem;
+    color: var(--primary, #4361ee);
+    font-weight: 700;
+}
+.qh-modal-text {
+    font-size: 1.08rem;
+    margin-bottom: 2.2rem;
+    color: var(--text-muted, #b0b0b0);
+    line-height: 1.6;
+}
+.qh-modal-close {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.1rem;
+    background: none;
+    border: none;
+    font-size: 2.2rem;
+    color: var(--danger, #f72585);
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.2s;
+    z-index: 2;
+}
+.qh-modal-close:hover {
+    color: #fff;
+    background: var(--danger, #f72585);
+    border-radius: 50%;
+}
+.qh-modal-accept {
+    display: block;
+    width: 100%;
+    padding: 1.1rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: var(--primary, #4361ee);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(67,97,238,0.12);
+    transition: background 0.2s, color 0.2s;
+    margin-top: 0.5rem;
+    letter-spacing: 0.01em;
+}
+.qh-modal-accept:hover {
+    background: var(--secondary, #3f37c9);
+    color: #fff;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
 }

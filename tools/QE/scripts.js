@@ -61,6 +61,13 @@ const dom = {
     importUrlBtn: document.getElementById('import-url-btn'),
     importRepoInput: document.getElementById('import-repo-input'),
     importRepoBtn: document.getElementById('import-repo-btn'),
+    // New elements for file/folder import
+    fileUpload: document.getElementById('file-upload'),
+    folderUpload: document.getElementById('folder-upload'),
+    importFilesBtn: document.getElementById('import-files-btn'),
+    importFolderChooserBtn: document.getElementById('import-folder-chooser-btn'),
+    urlTypeFile: document.querySelector('input[name="url-type"][value="file"]'),
+    urlTypeZip: document.querySelector('input[name="url-type"][value="zip"]')
 };
 
 // --- Monaco Editor Initialization ---
@@ -613,6 +620,28 @@ function setupEventListeners() {
             if (e.key === 'Enter') dom.importRepoBtn.click();
         });
     }
+
+    // Import File Button
+    if (dom.importFilesBtn) {
+        dom.importFilesBtn.addEventListener('click', () => {
+            dom.fileUpload.click(); // Trigger hidden file input
+        });
+    }
+
+    // Import Folder Button
+    if (dom.importFolderChooserBtn) {
+        dom.importFolderChooserBtn.addEventListener('click', () => {
+            dom.folderUpload.click(); // Trigger hidden folder input
+        });
+    }
+
+    // File and Folder Upload Inputs
+    if (dom.fileUpload) {
+        dom.fileUpload.addEventListener('change', handleFileUpload);
+    }
+    if (dom.folderUpload) {
+        dom.folderUpload.addEventListener('change', handleFolderUpload);
+    }
 }
 
 // --- UI Update Functions ---
@@ -667,23 +696,30 @@ function createFileItem(fileName, level) {
     li.className = 'file-item' + (fileName === state.currentFile ? ' active' : '');
     li.dataset.filename = fileName;
     li.dataset.type = 'file'; // Add type for context menu
-    li.style.paddingLeft = `${level * 15 + 10}px`; // Indentation based on level
-
-    const fileIcon = document.createElement('span');
-    fileIcon.className = 'file-type-icon';
-    // Basic icon, could be enhanced based on file type
-    fileIcon.textContent = '📄';
+    
+    // Set file extension as a data attribute for styling
+    const extension = fileName.split('.').pop().toLowerCase();
+    if (extension !== fileName) {
+        li.dataset.ext = extension;
+    }
 
     const fileNameSpan = document.createElement('span');
     fileNameSpan.className = 'file-item-name';
     fileNameSpan.textContent = fileName;
     fileNameSpan.title = fileName; // Tooltip for long names
 
-    li.appendChild(fileIcon);
     li.appendChild(fileNameSpan);
 
     // Click opens the file
     li.addEventListener('click', () => openFile(fileName));
+    
+    // Add drag and drop functionality
+    li.setAttribute('draggable', 'true');
+    li.addEventListener('dragstart', handleDragStart);
+    li.addEventListener('dragover', handleDragOver);
+    li.addEventListener('dragleave', handleDragLeave);
+    li.addEventListener('drop', handleDrop);
+    li.addEventListener('dragend', handleDragEnd);
 
     return li;
 }
@@ -693,27 +729,20 @@ function createFolderItem(folderPath, level) {
     if (!folderData || folderPath === 'root') return null; // Don't render root explicitly here
 
     const folderContainer = document.createElement('div');
-    // Use 'li' for semantics within the 'ul'? Or stick with 'div'? Let's use LI.
-    // const folderContainer = document.createElement('li');
-    folderContainer.className = 'folder-item'; // Add expanded state later if needed
+    folderContainer.className = 'folder-item';
     folderContainer.dataset.path = folderPath;
     folderContainer.dataset.type = 'folder'; // Add type for context menu
-    folderContainer.style.paddingLeft = `${level * 15 + 10}px`; // Indentation
-
+    
     // --- Folder Header (Toggle, Icon, Name) ---
     const folderHeader = document.createElement('div');
-    folderHeader.className = 'folder-item-header'; // Wrapper for header elements
-    folderHeader.style.display = 'flex';
-    folderHeader.style.alignItems = 'center';
+    folderHeader.className = 'folder-item-header';
     folderHeader.addEventListener('click', toggleFolderExpansion); // Click header to toggle
 
     const folderToggle = document.createElement('span');
     folderToggle.className = 'folder-toggle';
-    folderToggle.textContent = '▶'; // Default: collapsed
-
+    
     const folderIcon = document.createElement('span');
-    folderIcon.className = 'file-type-icon';
-    folderIcon.textContent = '📁';
+    folderIcon.className = 'folder-icon';
 
     const folderName = document.createElement('span');
     folderName.className = 'folder-name';
@@ -727,14 +756,17 @@ function createFolderItem(folderPath, level) {
 
     const folderContent = document.createElement('div');
     folderContent.className = 'folder-content';
-    // Content (files/subfolders) is added recursively by renderFileTree
-
+    
     folderContainer.appendChild(folderHeader);
     folderContainer.appendChild(folderContent);
-
-    // Set initial expanded state (e.g., based on saved state later)
-    // For now, default to collapsed
-    folderContent.style.display = 'none';
+    
+    // Add drag and drop functionality
+    folderContainer.setAttribute('draggable', 'true');
+    folderContainer.addEventListener('dragstart', handleDragStart);
+    folderContainer.addEventListener('dragover', handleDragOver);
+    folderContainer.addEventListener('dragleave', handleDragLeave);
+    folderContainer.addEventListener('drop', handleDrop);
+    folderContainer.addEventListener('dragend', handleDragEnd);
 
     return folderContainer;
 }
@@ -2375,10 +2407,28 @@ function handleImportFiles(fileList) {
     handleFileUpload(event);
 }
 function handleImportUrl(url) {
-    // Use the same logic as fetchFromUrl, but with a custom URL
-    dom.urlInput = { value: url }; // Temporary override for fetchFromUrl
-    fetchFromUrl();
-    dom.urlInput = document.getElementById('url-input'); // Restore
+    // Check which import type is selected (file or ZIP)
+    if (!url) {
+        url = dom.importUrlInput?.value?.trim();
+    }
+    
+    if (!url) {
+        showMessage("Please enter a URL", 'error');
+        return;
+    }
+    
+    // Determine if this is a file or ZIP based on radio button selection
+    const isZipImport = dom.urlTypeZip && dom.urlTypeZip.checked;
+    
+    if (isZipImport) {
+        // Handle as ZIP archive
+        importZipFile(url);
+    } else {
+        // Handle as single file (existing functionality)
+        dom.urlInput = { value: url }; // Temporary override for fetchFromUrl
+        fetchFromUrl();
+        dom.urlInput = document.getElementById('url-input'); // Restore
+    }
 }
 function handleImportRepo(repo) {
     // Use the same logic as fetchGitHubRepo, but with a custom repo
@@ -2386,3 +2436,310 @@ function handleImportRepo(repo) {
     fetchGitHubRepo();
     dom.githubRepo = document.getElementById('github-repo');
 }
+
+// --- Import ZIP Archive ---
+async function importZipFile(url) {
+    if (!url) {
+        showMessage("Please enter a URL for the ZIP archive", 'error');
+        return;
+    }
+
+    setLoading(true);
+    try {
+        // Fetch the ZIP file
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        }
+        
+        // Get the ZIP data as arrayBuffer
+        const zipData = await response.arrayBuffer();
+        
+        // Use JSZip to parse the archive
+        if (typeof JSZip === 'undefined') {
+            throw new Error("JSZip library not found. Cannot extract ZIP archive.");
+        }
+        
+        const zip = new JSZip();
+        const contents = await zip.loadAsync(zipData);
+        
+        // Track stats
+        let extractedFiles = 0;
+        let extractedFolders = new Set();
+        let firstFileName = null;
+        
+        // Process all files in the ZIP
+        const filePromises = [];
+        
+        // A sequential processing function to maintain folder hierarchy
+        const processZipEntries = async () => {
+            // Get all file paths, sort them to ensure parent folders are created first
+            const filePaths = Object.keys(contents.files).sort();
+            
+            for (const filePath of filePaths) {
+                const zipObj = contents.files[filePath];
+                
+                // Skip directories, we'll create them as needed when processing files
+                if (zipObj.dir) continue;
+                
+                try {
+                    // Get file content
+                    const content = await zipObj.async('text');
+                    
+                    // Parse path to get file name and folder structure
+                    const pathParts = filePath.split('/');
+                    const fileName = pathParts.pop();
+                    
+                    if (!fileName) continue; // Skip if no valid filename (e.g., empty paths)
+                    
+                    // Handle directory structure
+                    let currentFolderPath = 'root';
+                    
+                    // Create folders in the path
+                    for (const folderName of pathParts) {
+                        if (!folderName) continue; // Skip empty parts
+                        
+                        const nextPath = currentFolderPath === 'root' 
+                            ? folderName 
+                            : `${currentFolderPath}/${folderName}`;
+                        
+                        // Create folder if it doesn't exist
+                        if (!state.folders[nextPath]) {
+                            state.folders[nextPath] = {
+                                name: folderName,
+                                files: [],
+                                subfolders: [],
+                                path: nextPath
+                            };
+                            
+                            // Link to parent
+                            if (state.folders[currentFolderPath] &&
+                                !state.folders[currentFolderPath].subfolders.includes(nextPath)) {
+                                state.folders[currentFolderPath].subfolders.push(nextPath);
+                            }
+                            
+                            extractedFolders.add(nextPath);
+                        }
+                        
+                        currentFolderPath = nextPath;
+                    }
+                    
+                    // Check for file collision
+                    if (state.files[fileName] && state.filePaths[fileName] === currentFolderPath) {
+                        console.warn(`ZIP file "${fileName}" overwriting existing file in "${currentFolderPath}".`);
+                        deleteFileInternal(fileName);
+                    }
+                    
+                    // Create the model and add to state
+                    const language = getLanguageForFile(fileName);
+                    createEditorModel(fileName, content, language, currentFolderPath);
+                    
+                    if (!firstFileName) {
+                        firstFileName = fileName;
+                    }
+                    
+                    extractedFiles++;
+                } catch (error) {
+                    console.error(`Error extracting file ${filePath}:`, error);
+                }
+            }
+        };
+        
+        // Process all entries sequentially
+        await processZipEntries();
+        
+        // Update UI
+        renderFileTree();
+        
+        // Open the first extracted file if no file is currently open
+        if (firstFileName && (!state.currentFile || !state.files[state.currentFile])) {
+            openFile(firstFileName);
+        }
+        
+        showMessage(`Extracted ${extractedFiles} files and ${extractedFolders.size} folders from ZIP archive`, 'success');
+    } catch (error) {
+        console.error("Error importing ZIP:", error);
+        showMessage(`Error importing ZIP: ${error.message}`, 'error');
+    } finally {
+        setLoading(false);
+    }
+}
+
+// --- Handle Directory Drop Support ---
+async function handleDroppedItems(items) {
+    setLoading(true);
+    
+    try {
+        // Track stats and first file for opening
+        let processedFiles = 0;
+        let processedFolders = 0;
+        let firstFileName = null;
+        
+        // Use Set to track created folders to avoid duplicates
+        const createdFolders = new Set();
+        
+        // Process entries recursively
+        async function processEntry(entry, basePath = '') {
+            if (entry.isFile) {
+                try {
+                    // Get file as FileSystemFileEntry
+                    const file = await new Promise((resolve, reject) => {
+                        entry.file(resolve, reject);
+                    });
+                    
+                    // Read file content
+                    const content = await readFileContent(file);
+                    const fileName = file.name;
+                    
+                    // Determine target folder path in our structure
+                    const folderPath = basePath ? basePath : 'root';
+                    
+                    // Check for file collision
+                    if (state.files[fileName] && state.filePaths[fileName] === folderPath) {
+                        console.warn(`File "${fileName}" already exists in "${folderPath}". Overwriting.`);
+                        deleteFileInternal(fileName);
+                    }
+                    
+                    // Create the model and add to state
+                    const language = getLanguageForFile(fileName);
+                    createEditorModel(fileName, content, language, folderPath);
+                    
+                    processedFiles++;
+                    
+                    // Track first file for opening
+                    if (!firstFileName) {
+                        firstFileName = fileName;
+                    }
+                } catch (error) {
+                    console.error(`Error processing dropped file ${entry.fullPath}:`, error);
+                }
+            } 
+            else if (entry.isDirectory) {
+                try {
+                    // Get name of this directory
+                    const dirName = entry.name;
+                    
+                    // Create folder path (handle root specially)
+                    const folderPath = basePath ? 
+                        (basePath === 'root' ? dirName : `${basePath}/${dirName}`) : 
+                        dirName;
+                    
+                    // Create folder if it doesn't exist
+                    if (!state.folders[folderPath] && !createdFolders.has(folderPath)) {
+                        // Determine parent path
+                        const parentPath = basePath || 'root';
+                        
+                        // Create folder entry
+                        state.folders[folderPath] = {
+                            name: dirName,
+                            files: [],
+                            subfolders: [],
+                            path: folderPath
+                        };
+                        
+                        // Link to parent
+                        if (state.folders[parentPath] && 
+                            !state.folders[parentPath].subfolders.includes(folderPath)) {
+                            state.folders[parentPath].subfolders.push(folderPath);
+                        }
+                        
+                        createdFolders.add(folderPath);
+                        processedFolders++;
+                    }
+                    
+                    // Read directory entries
+                    const dirReader = entry.createReader();
+                    
+                    // Use recursion to process all entries
+                    let entries = [];
+                    let readEntries = async () => {
+                        const newEntries = await new Promise((resolve, reject) => {
+                            dirReader.readEntries(resolve, reject);
+                        });
+                        
+                        if (newEntries.length > 0) {
+                            entries = entries.concat(newEntries);
+                            // Continue reading if more entries
+                            await readEntries();
+                        }
+                    };
+                    
+                    // Start reading entries
+                    await readEntries();
+                    
+                    // Process all collected entries
+                    for (const childEntry of entries) {
+                        await processEntry(childEntry, folderPath);
+                    }
+                } catch (error) {
+                    console.error(`Error processing dropped directory ${entry.fullPath}:`, error);
+                }
+            }
+        }
+        
+        // Process all dropped items
+        const promises = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === 'file') {
+                const entry = item.webkitGetAsEntry();
+                if (entry) {
+                    promises.push(processEntry(entry));
+                }
+            }
+        }
+        
+        // Wait for all entries to be processed
+        await Promise.all(promises);
+        
+        // Update UI
+        renderFileTree();
+        
+        // Open the first file if no file is currently open
+        if (firstFileName && (!state.currentFile || !state.files[state.currentFile])) {
+            openFile(firstFileName);
+        }
+        
+        showMessage(`Imported ${processedFiles} files from ${processedFolders} folders`, 'success');
+    } catch (error) {
+        console.error("Error processing dropped items:", error);
+        showMessage(`Error processing dropped items: ${error.message}`, 'error');
+    } finally {
+        setLoading(false);
+    }
+}
+
+if (dom.importDropzone) {
+        // Enable directory drop by preventing default on dragover
+        dom.importDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy'; // Show copy icon
+            dom.importDropzone.classList.add('dragover');
+        });
+        dom.importDropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dom.importDropzone.classList.remove('dragover');
+        });
+        dom.importDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dom.importDropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            
+            // Check if we have items (which can include directories)
+            if (e.dataTransfer.items) {
+                // Handle directory drop using webkitGetAsEntry API
+                const items = e.dataTransfer.items;
+                if (items.length > 0 && items[0].webkitGetAsEntry) {
+                    handleDroppedItems(items);
+                    dom.importModal.style.display = 'none';
+                    return;
+                }
+            }
+            
+            // Fallback to regular file handling
+            if (files && files.length > 0) {
+                handleImportFiles(files);
+                dom.importModal.style.display = 'none';
+            }
+        });
+    }

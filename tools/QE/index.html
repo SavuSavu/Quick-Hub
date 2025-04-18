@@ -6,6 +6,8 @@
     <title>Quick Edit (QE) - Client-Side Code Editor</title>
     <!-- Link to the external CSS file -->
     <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+
 </head>
 <body>
     <header>
@@ -14,78 +16,61 @@
 
     <div class="toolbar">
         <div class="toolbar-group">
-            <button id="import-btn">Import</button>
-            <button id="download-btn" disabled>Download Current File</button>
+            <button id="import-btn" title="Import files or projects"><i class="fas fa-file-import"></i> Import</button>
+            <button id="download-btn" disabled title="Download current file"><i class="fas fa-download"></i> Download File</button>
         </div>
         <div class="toolbar-group">
-            <button id="new-file-btn">New File</button>
-            <button id="new-folder-btn">New Folder</button>
-            <button id="download-all-btn">Download Workspace</button>
+            <button id="new-file-btn" title="Create a new file"><i class="fas fa-file-circle-plus"></i> New File</button>
+            <button id="new-folder-btn" title="Create a new folder"><i class="fas fa-folder-plus"></i> New Folder</button>
+            <button id="download-all-btn" title="Download entire workspace as ZIP"><i class="fas fa-file-zipper"></i> Download Workspace</button>
         </div>
     </div>
 
     <div class="main-container">
         <div class="file-sidebar">
             <div class="sidebar-header">
-                Files <button class="sidebar-toggle">←</button>
+                <div class="sidebar-title">EXPLORER</div>
+                <div class="sidebar-actions">
+                    <button class="action-btn" id="collapse-all-btn" title="Collapse All Folders">
+                        <i class="fas fa-compress-alt"></i>
+                    </button>
+                    <button class="sidebar-toggle" title="Toggle Sidebar">←</button>
+                </div>
             </div>
-            <ul class="file-list" id="file-list"></ul>
+            <div class="file-tree-container">
+                <ul id="file-list" class="file-tree"></ul>
+            </div>
         </div>
+
         <div class="editor-container">
             <div id="monaco-editor"></div>
         </div>
     </div>
 
     <div class="status-bar">
-        <div id="language-mode">No file open</div>
-        <div id="cursor-position">Line: 1, Column: 1</div>
-    </div>
-
-    <!-- GitHub File Selection Modal -->
-    <div class="modal" id="github-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Select Files from GitHub</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div id="repo-info"></div>
-            <ul class="repo-file-list" id="repo-file-list"></ul>
-            <button id="load-github-files">Load Selected Files</button>
+        <div class="status-left">
+            <span id="language-mode">Language: Text</span>
         </div>
-    </div>
-
-    <!-- Session Recovery Modal -->
-    <div class="modal" id="session-recovery-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Recover Previous Session</h3>
-                 <!-- Added a close button for consistency -->
-                <button class="modal-close">&times;</button>
-            </div>
-            <!-- Adjusted padding/margin using standard CSS - remove Tailwind if not used -->
-            <div class="modal-body">
-                <p class="message">A previous editing session has been detected. Would you like to restore your work?</p>
-                <p class="session-details" id="session-details"></p>
-                <div class="modal-actions">
-                    <button id="new-session-btn" class="button secondary">Start New Session</button>
-                    <button id="recover-session-btn" class="button primary">Recover Previous Work</button>
-                </div>
-            </div>
+        <div class="status-right">
+            <span id="cursor-position">Line: 1, Col: 1</span>
+            <span id="save-status"></span>
         </div>
     </div>
 
     <!-- Context Menu -->
-    <div id="context-menu" class="context-menu" style="display: none;">
-        <div class="context-menu-item" data-action="rename">Rename</div>
-        <div class="context-menu-item" data-action="delete">Delete</div>
-        <div class="context-separator"></div>
-        <div class="context-menu-item" data-action="copy">Copy</div>
-        <div class="context-menu-item" data-action="cut">Cut</div>
-        <div class="context-menu-item" data-action="paste">Paste</div>
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" data-action="rename"><i class="fas fa-edit"></i> Rename</div>
+        <div class="context-menu-item" data-action="delete"><i class="fas fa-trash-alt"></i> Delete</div>
+        <div class="context-menu-item" data-action="copy"><i class="fas fa-copy"></i> Copy</div>
+        <div class="context-menu-item" data-action="cut"><i class="fas fa-cut"></i> Cut</div>
+        <div class="context-menu-item" data-action="paste"><i class="fas fa-paste"></i> Paste</div>
     </div>
 
     <!-- Loading Indicator -->
-    <div class="loading-indicator" id="loading">Loading...</div>
+    <div class="loading-indicator" id="loading">
+        <div class="spinner"></div>
+        <span>Loading...</span>
+    </div>
 
     <!-- Message Box -->
     <div class="message-box" id="message-box"></div>
@@ -94,7 +79,7 @@
     <div class="modal" id="new-file-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Create New File</h3>
+                <h3><i class="fas fa-file-circle-plus"></i> Create New File</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -117,7 +102,7 @@
     <div class="modal" id="new-folder-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Create New Folder</h3>
+                <h3><i class="fas fa-folder-plus"></i> Create New Folder</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -140,7 +125,7 @@
     <div class="modal" id="folder-import-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Import Folder Structure</h3>
+                <h3><i class="fas fa-folder-open"></i> Import Folder Structure</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -160,7 +145,7 @@
     <div class="modal" id="download-workspace-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Download Workspace</h3>
+                <h3><i class="fas fa-file-zipper"></i> Download Workspace</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -178,39 +163,92 @@
     <div class="modal" id="import-modal">
         <div class="modal-content import-modal-content">
             <div class="modal-header">
-                <h3>Import Files or Project</h3>
+                <h3><i class="fas fa-file-import"></i> Import Files or Project</h3>
                 <button class="modal-close" id="import-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="import-option">
-                    <label class="import-label">Drag & Drop Files</label>
+                    <label class="import-label"><i class="fas fa-cloud-upload-alt"></i> Drag & Drop Files or Folders</label>
                     <div id="import-dropzone" class="import-dropzone">
-                        <span>Drop files here to import</span>
+                        <i class="fas fa-cloud-upload-alt dropzone-icon"></i>
+                        <span>Drop files or folders here to import</span>
+                        <div class="dropzone-hint">Folder structure will be preserved</div>
+                    </div>
+                    <div class="manual-import-buttons">
+                        <button id="import-files-btn" class="button secondary"><i class="fas fa-file"></i> Select Files</button>
+                        <button id="import-folder-chooser-btn" class="button secondary"><i class="fas fa-folder"></i> Select Folder</button>
                     </div>
                 </div>
                 <div class="import-option">
-                    <label for="import-url-input" class="import-label">Import from URL</label>
+                    <label for="import-url-input" class="import-label"><i class="fas fa-link"></i> Import from URL</label>
                     <div class="import-url-group">
                         <input type="text" id="import-url-input" placeholder="Paste or enter a file URL...">
-                        <button id="import-url-btn">Import URL</button>
+                        <button id="import-url-btn"><i class="fas fa-download"></i> Import</button>
+                    </div>
+                    <div class="url-type-selector">
+                        <label>
+                            <input type="radio" name="url-type" value="file" checked> File
+                        </label>
+                        <label>
+                            <input type="radio" name="url-type" value="zip"> ZIP Archive
+                        </label>
                     </div>
                 </div>
                 <div class="import-option">
-                    <label for="import-repo-input" class="import-label">Import from Repository</label>
-                    <div class="import-repo-group">
-                        <input type="text" id="import-repo-input" placeholder="GitHub/GitLab repo (e.g., owner/repo)">
-                        <button id="import-repo-btn">Import Repo</button>
+                    <label for="import-repo-input" class="import-label"><i class="fab fa-github"></i> Import from GitHub</label>
+                    <div class="import-url-group">
+                        <input type="text" id="import-repo-input" placeholder="Enter owner/repo or GitHub URL...">
+                        <button id="import-repo-btn"><i class="fab fa-github"></i> Browse</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Monaco Editor CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs/loader.js"></script>
-    <!-- JSZip CDN (needed for workspace download) -->
+    <!-- GitHub Repo Browser Modal -->
+    <div class="modal" id="github-modal">
+        <div class="modal-content github-modal-content">
+            <div class="modal-header">
+                <h3><i class="fab fa-github"></i> GitHub Repository</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="repo-info" class="repo-info"></div>
+                <div class="repo-file-browser">
+                    <ul id="repo-file-list" class="repo-file-list"></ul>
+                </div>
+                <div class="modal-actions">
+                    <button id="load-github-files" class="button primary">Import Selected Files</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Recovery Modal -->
+    <div class="modal" id="session-recovery-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-history"></i> Previous Session Found</h3>
+            </div>
+            <div class="modal-body">
+                <p>Would you like to recover your previous editing session?</p>
+                <div class="session-details" id="session-details"></div>
+                <div class="modal-actions">
+                    <button id="new-session-btn" class="button secondary">New Session</button>
+                    <button id="recover-session-btn" class="button primary">Recover Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Inputs -->
+    <input type="file" id="file-upload" style="display: none;" multiple>
+    <input type="file" id="folder-upload" style="display: none;" webkitdirectory directory multiple>
+
+    <script type="module" src="src/main.js"></script>
+
+    <!-- Ensure JSZip and Monaco Loader are still included -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Link to the external JavaScript file -->
-    <script src="scripts.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs/loader.js"></script>
 </body>
 </html>

@@ -48,6 +48,12 @@ Integrate three separate web applications (SBOM Analyzer, NetScan Pro "NOT-PING"
     * Integrated as an iframe tool via tools.json.
     * See tools/QE/projectNotes.md for technical notes and limitations.
 
+* **Brutus** (tools/Brutus/index.html)
+    * Category: Security
+    * Description: Browser-based bruteforce tool supporting HTTP, FTP, SSH, SMB. Modern UI, multi-target, custom wordlists.
+    * Integrated as an iframe tool via tools.json.
+    * See tools/Brutus/ for technical notes and limitations.
+
 ## Challenges
 
 *   **CSS Specificity/Cascading:** Ensuring the main `styles.css` applied correctly within the iframed tools without major conflicts required careful selector choices and removing the tools' original CSS.

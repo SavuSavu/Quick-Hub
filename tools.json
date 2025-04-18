@@ -46,6 +46,13 @@
             "name": "Vulnews",
             "description": "Vulnerability intelligence aggregator from NVD and GitHub",
             "type": "iframe"
+          },
+          {
+            "id": "brutus",
+            "url": "tools/Brutus/index.html",
+            "name": "Brutus",
+            "description": "Browser-based bruteforce tool supporting HTTP, FTP, SSH, SMB. Modern UI, multi-target, custom wordlists.",
+            "type": "iframe"
           }
         ]
       },
