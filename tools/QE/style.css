@@ -1,0 +1,556 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+}
+
+/* Header */
+header {
+    padding: 0.5rem 1rem; /* Added horizontal padding */
+    background-color: #333;
+    border-bottom: 1px solid #444;
+}
+
+header h1 {
+    font-size: 1.2rem; /* Adjusted size slightly */
+    font-weight: 600;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem; /* Increased gap slightly */
+    padding: 0.5rem 1rem;
+    background-color: #252526;
+    border-bottom: 1px solid #444;
+    align-items: center;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.toolbar button,
+button.button { /* Generic button styling */
+    background-color: #0e639c;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+}
+
+.toolbar button:hover,
+button.button:hover {
+    background-color: #1177bb;
+}
+
+.toolbar button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.toolbar input[type="text"],
+.toolbar input[type="file"],
+.toolbar select,
+input[type="text"], /* Generic input styling */
+select {
+    padding: 0.4rem;
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    border: 1px solid #555;
+    border-radius: 3px;
+    min-width: 180px; /* Adjusted min-width */
+}
+
+.toolbar input[type="file"] {
+    min-width: auto; /* Override for file input */
+    border: none; /* Style file inputs minimally */
+    background: none;
+    padding: 0.2rem;
+}
+
+
+/* Main Container */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* File Sidebar */
+.file-sidebar {
+    width: 220px;
+    background-color: #252526;
+    border-right: 1px solid #444;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: width 0.3s ease; /* Add transition for hiding */
+}
+
+.sidebar-header {
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    -webkit-user-select: none; /* Prevent text selection for Safari */
+    user-select: none; /* Prevent text selection */
+}
+
+.sidebar-toggle {
+    cursor: pointer;
+    -webkit-user-select: none; /* For Safari */
+    -webkit-user-select: none; /* For Safari */
+    user-select: none;
+    padding: 0.2rem 0.5rem;
+    border: none;
+    background: none;
+    color: #d4d4d4;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.sidebar-toggle:hover {
+    color: #fff;
+}
+
+/* Sidebar Hidden State */
+.main-container.sidebar-hidden .file-sidebar {
+    width: 0;
+    border-right: none;
+    overflow: hidden;
+}
+
+
+/* File List & Tree */
+.file-list, .file-tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-item, .folder-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-item:hover, .folder-item:hover {
+    background-color: #2a2d2e;
+}
+
+.file-item.active {
+    background-color: #37373d;
+}
+
+.file-item-name, .folder-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 5px;
+}
+
+.file-type-icon {
+    margin-right: 5px;
+    font-size: 0.9rem; /* Slightly larger icons */
+    width: 1em; /* Ensure icons align */
+    text-align: center;
+}
+
+.folder-content {
+    padding-left: 1rem;
+    display: none; /* Folders collapsed by default */
+    border-left: 1px solid #444; /* Visual indicator */
+    margin-left: 10px; /* Indent content */
+}
+
+.folder-expanded > .folder-content { /* Use > for direct child */
+    display: block;
+}
+
+.folder-toggle {
+    display: inline-block;
+    margin-right: 5px;
+    width: 12px;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+    font-size: 0.7rem; /* Smaller toggle */
+    color: #aaa;
+}
+
+.folder-expanded > .folder-item-header > .folder-toggle { /* Target toggle within header */
+     transform: rotate(90deg);
+}
+/* Add a wrapper for folder header items if needed for better targeting */
+.folder-item > span:first-child { /* Simple way to target toggle if it's always first */
+    transition: transform 0.2s ease-in-out;
+}
+.folder-expanded > span:first-child {
+    transform: rotate(90deg);
+}
+
+
+/* Editor Container */
+.editor-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative; /* Needed for absolute positioning inside */
+}
+
+#monaco-editor {
+    width: 100%;
+    height: 100%;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 1rem;
+    background-color: #007acc;
+    color: white;
+    font-size: 0.8rem;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Modals */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #252526;
+    padding: 0; /* Remove padding here, add to header/body */
+    border-radius: 5px;
+    max-width: 90%;
+    width: 500px; /* Default width */
+    max-height: 90vh; /* Use viewport height */
+    overflow: hidden; /* Prevent content overflow */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem; /* Padding for header */
+    border-bottom: 1px solid #444;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+    padding: 0.2rem;
+}
+
+.modal-close:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 1rem;
+    overflow-y: auto; /* Allow body to scroll */
+    flex-grow: 1; /* Allow body to take up space */
+}
+
+.modal-actions { /* Styling for button containers in modals */
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #444;
+}
+
+/* Specific Modal Content */
+#repo-info {
+    padding: 0 1rem 0.5rem 1rem; /* Add padding if needed */
+    font-size: 0.9rem;
+}
+
+.repo-file-list {
+    list-style: none;
+    /* Let modal-body handle scrolling */
+    /* max-height: 300px; */
+    /* overflow-y: auto; */
+    border: 1px solid #444;
+    margin: 0.5rem 0; /* Adjust margin */
+    padding: 0;
+}
+
+.repo-file-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.repo-file-item:hover {
+    background-color: #2a2d2e;
+}
+
+.repo-file-checkbox {
+    margin-right: 0.75rem; /* Increased spacing */
+    cursor: pointer;
+}
+.repo-file-item label {
+    cursor: pointer; /* Make label clickable */
+}
+
+#load-github-files { /* Specific button styling */
+    margin: 1rem; /* Add margin around button */
+    align-self: flex-end; /* Align to the end of the flex container (modal-content) */
+}
+
+/* Session Recovery Modal Specifics */
+.session-details {
+    font-size: 0.85rem;
+    color: #aaa; /* Less prominent color */
+    margin: 0.75rem 0;
+    white-space: pre-wrap; /* Preserve line breaks */
+}
+.message {
+    margin-bottom: 0.75rem;
+}
+/* Use modal-actions for buttons */
+
+
+/* Form Group Styling (for modals) */
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.form-group input[type="text"],
+.form-group select {
+    width: 100%; /* Make inputs fill container */
+}
+
+
+/* Context Menu */
+.context-menu {
+    position: absolute;
+    z-index: 1000;
+    background-color: #252526;
+    border: 1px solid #444;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    padding: 0.3rem 0; /* Padding top/bottom */
+}
+
+.context-menu-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.context-menu-item:hover {
+    background-color: #2a2d2e;
+}
+
+.context-separator {
+    height: 1px;
+    background-color: #444;
+    margin: 0.3rem 0;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    z-index: 50; /* Below modals */
+    font-size: 1rem;
+}
+
+/* Message Box */
+.message-box {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.6rem 1.2rem; /* Slightly larger padding */
+    border-radius: 3px;
+    display: none; /* Hidden by default */
+    z-index: 100; /* Above most elements */
+    max-width: 300px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    font-size: 0.9rem;
+}
+
+.message-success {
+    background-color: #0f9c4b; /* Greener success */
+    color: white;
+}
+
+.message-error {
+    background-color: #d63031; /* Redder error */
+    color: white;
+}
+.message-info { /* Added info style */
+    background-color: #0984e3; /* Blue info */
+    color: white;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        height: calc(100vh - var(--header-height, 40px) - var(--toolbar-height, 100px) - var(--statusbar-height, 25px)); /* Adjust heights as needed */
+    }
+
+    .file-sidebar {
+        width: 100%;
+        max-height: 200px; /* Increased max-height */
+        border-right: none;
+        border-bottom: 1px solid #444;
+        transition: max-height 0.3s ease; /* Transition height */
+    }
+
+    .main-container.sidebar-hidden .file-sidebar {
+        max-height: 0; /* Collapse height */
+        border-bottom: none;
+        width: 100%; /* Keep width */
+        overflow: hidden;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem; /* Reduce gap */
+    }
+
+    .toolbar-group {
+        flex-direction: column; /* Stack items vertically */
+        align-items: stretch; /* Stretch items */
+        width: 100%; /* Take full width */
+    }
+    .toolbar input, .toolbar select, .toolbar button {
+        min-width: unset; /* Remove min-width */
+        width: 100%; /* Make elements full width */
+    }
+    .toolbar input[type="file"] {
+         width: auto; /* Except file input */
+    }
+}
+
+/* Import Modal Styles */
+#import-modal .import-modal-content {
+    animation: importModalFadeIn 0.25s cubic-bezier(0.4,0,0.2,1);
+    min-width: 340px;
+    max-width: 98vw;
+}
+@keyframes importModalFadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+#import-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.import-option {
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.import-label {
+    font-weight: 500;
+    color: #d4d4d4;
+    margin-bottom: 0.2rem;
+}
+.import-dropzone {
+    border: 2px dashed #0e639c;
+    border-radius: 6px;
+    background: #23272e;
+    color: #7ecfff;
+    padding: 1.2rem;
+    text-align: center;
+    font-size: 1rem;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+    min-height: 60px;
+    user-select: none;
+}
+.import-dropzone.dragover {
+    background: #18304a;
+    border-color: #1177bb;
+    color: #fff;
+}
+.import-url-group, .import-repo-group {
+    display: flex;
+    gap: 0.5rem;
+}
+#import-url-input, #import-repo-input {
+    flex: 1;
+    min-width: 0;
+}
+#import-url-btn, #import-repo-btn {
+    min-width: 110px;
+}
+
+/* Responsive for modal */
+@media (max-width: 600px) {
+    #import-modal .import-modal-content {
+        width: 98vw;
+        min-width: unset;
+        max-width: 98vw;
+    }
+}

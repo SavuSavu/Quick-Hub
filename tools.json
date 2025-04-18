@@ -11,6 +11,13 @@
             "name": "BOMStorm",
             "description": "CycloneDX XML SBOM Analyzer",
             "type": "iframe"
+          },
+          {
+            "id": "qe",
+            "url": "tools/QE/index.html",
+            "name": "Quick Edit (QE)",
+            "description": "Client-side code editor with Monaco, file/folder management, GitHub/URL import, and workspace ZIP download.",
+            "type": "iframe"
           }
         ]
       },

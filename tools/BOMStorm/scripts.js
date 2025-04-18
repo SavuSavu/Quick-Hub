@@ -438,7 +438,8 @@ function addNodesAndEdgesAlongPath(path, cy) { // Removed bomRefMap param, not n
                 }
                  const added = cy.add(nodeObject);
                  node = added;
-                 console.log(`Added missing node for search reveal: ${nodeRef}`);
+                 // Remove or comment out noisy log:
+                 // console.log(`Added missing node for search reveal: ${nodeRef}`);
             } else {
                 console.error(`Failed to add node ${nodeRef} along path - data missing.`);
                 continue;
@@ -460,7 +461,8 @@ function addNodesAndEdgesAlongPath(path, cy) { // Removed bomRefMap param, not n
             // Both prevNode (added in i-1) and node (added in i) MUST exist now.
             if (cy.$id(edgeId).empty()) {
                 cy.add({ group: 'edges', data: { id: edgeId, source: prevNodeRef, target: nodeRef } });
-                console.log(`Added missing edge for search reveal: ${edgeId}`);
+                // Remove or comment out noisy log:
+                // console.log(`Added missing edge for search reveal: ${edgeId}`);
             }
         }
         // ******** END EDGE ADDITION LOGIC CHANGE ********
@@ -553,6 +555,15 @@ function createCytoscapeElements(bomRefMap, dependencyMap, dependencyRoots, dupl
     return elements;
 }
 
+
+// --- Debounce Utility ---
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
 
 /** Displays the analysis results in the UI */
 function displayResults(results) {
@@ -881,107 +892,90 @@ function handleGraphRefresh() {
 /** Enhanced graph search handler */
 function handleGraphSearch() {
      if (!cyInstance || !graphSearchInput || !analysisResultsStore) return;
-     const { bomRefMap, dependencyMap, dependencyRoots, duplicateDetails } = analysisResultsStore; // Destructure needed data
+     const { bomRefMap, dependencyMap, dependencyRoots, duplicateDetails } = analysisResultsStore;
 
      const query = graphSearchInput.value.trim().toLowerCase();
      clearGraphHighlights();
-     if (query === '') return;
+     // Only search for 3+ chars
+     if (query.length < 3) return;
 
-     console.log(`Searching for: ${query}`);
-     cyInstance.batch(() => { // Batch DOM/graph updates
+     // Only search on Enter, or after debounce (see event listener below)
+     // (Debounce is already applied in event listener)
 
-         const potentialMatchesRefs = [];
-         analysisResultsStore.bomRefMap.forEach((component, ref) => {
-             const label = `${component.name}\n(${component.version === MISSING_VERSION_PLACEHOLDER ? "<missing>" : component.version})`.toLowerCase();
-             const name = (component.name || '').toLowerCase();
-             const version = (component.version === MISSING_VERSION_PLACEHOLDER ? '' : component.version).toLowerCase();
-             if (label.includes(query) || name.includes(query) || version.includes(query)) {
-                 potentialMatchesRefs.push(ref);
-             }
-         });
-
-         if (potentialMatchesRefs.length === 0) {
-             console.log("No components matched search query in the dataset.");
-             if(graphSearchInput.style) {
-                 graphSearchInput.style.borderColor = '#f72585'; // --danger
-                 setTimeout(() => { graphSearchInput.style.borderColor = ''; }, 1500);
-             }
-             cyInstance.elements().removeClass('dimmed');
-             return;
+     // Cap the number of matches to avoid UI freeze
+     const MAX_MATCHES = 30; // Lowered for less crowding
+     let potentialMatchesRefs = [];
+     analysisResultsStore.bomRefMap.forEach((component, ref) => {
+         const label = `${component.name}\n(${component.version === MISSING_VERSION_PLACEHOLDER ? "<missing>" : component.version})`.toLowerCase();
+         const name = (component.name || '').toLowerCase();
+         const version = (component.version === MISSING_VERSION_PLACEHOLDER ? '' : component.version).toLowerCase();
+         if (label.includes(query) || name.includes(query) || version.includes(query)) {
+             potentialMatchesRefs.push(ref);
          }
-
-         console.log(`Found ${potentialMatchesRefs.length} potential matches in data.`);
-
-         cyInstance.elements().addClass('dimmed');
-
-         let nodesToMakeVisible = cyInstance.collection();
-         let needsLayout = false;
-
-         potentialMatchesRefs.forEach(matchRef => {
-             let nodeInGraph = cyInstance.$id(matchRef);
-
-             if (nodeInGraph.empty()) {
-                 console.log(`Match ${matchRef} is hidden. Finding path...`);
-                 const path = findPathToNode(matchRef, dependencyRoots, dependencyMap);
-                 if (path) {
-                     console.log(`Path found for ${matchRef}:`, path);
-                     // Pass necessary map to the function
-                     const addedNodes = addNodesAndEdgesAlongPath(path, cyInstance); // Pass only cy now
-                     nodesToMakeVisible = nodesToMakeVisible.union(addedNodes);
-                     needsLayout = true;
-                 } else {
-                     console.warn(`Could not find path for potential match: ${matchRef}`);
-                 }
-             } else {
-                 nodesToMakeVisible = nodesToMakeVisible.union(nodeInGraph);
+     });
+     if (potentialMatchesRefs.length > MAX_MATCHES) {
+         potentialMatchesRefs = potentialMatchesRefs.slice(0, MAX_MATCHES);
+         if(graphSearchInput.style) {
+             graphSearchInput.style.borderColor = '#f8961e'; // warning color
+             setTimeout(() => { graphSearchInput.style.borderColor = ''; }, 1500);
+         }
+         // Optionally show a warning in the UI (not console)
+     }
+     if (potentialMatchesRefs.length === 0) {
+         if(graphSearchInput.style) {
+             graphSearchInput.style.borderColor = '#f72585'; // --danger
+             setTimeout(() => { graphSearchInput.style.borderColor = ''; }, 1500);
+         }
+         cyInstance.elements().removeClass('dimmed');
+         return;
+     }
+     cyInstance.elements().addClass('dimmed');
+     let nodesToMakeVisible = cyInstance.collection();
+     let needsLayout = false;
+     potentialMatchesRefs.forEach(matchRef => {
+         let nodeInGraph = cyInstance.$id(matchRef);
+         if (nodeInGraph.empty()) {
+             const path = findPathToNode(matchRef, dependencyRoots, dependencyMap);
+             if (path) {
+                 const addedNodes = addNodesAndEdgesAlongPath(path, cyInstance);
+                 nodesToMakeVisible = nodesToMakeVisible.union(addedNodes);
+                 needsLayout = true;
              }
-         });
-
-         let finalHighlightSet = cyInstance.collection();
-         const namesProcessed = new Set();
-
-         nodesToMakeVisible.forEach(node => {
-             finalHighlightSet = finalHighlightSet.union(node);
-             const nodeName = node.data('name');
-
-             if (nodeName && analysisResultsStore.duplicateDetails.has(nodeName) && !namesProcessed.has(nodeName)) {
-                 console.log(`Node ${node.id()} (${nodeName}) has duplicates. Highlighting all visible instances.`);
-                 // Use correct attribute selector syntax
-                 const duplicateNodesInGraph = cyInstance.nodes(`[name = "${nodeName}"]`);
-                 finalHighlightSet = finalHighlightSet.union(duplicateNodesInGraph);
-                 namesProcessed.add(nodeName);
-             }
-         });
-
-         console.log(`Highlighting ${finalHighlightSet.length} nodes.`);
-
-         if (finalHighlightSet.length > 0) {
-            // Apply highlighting: remove dim from neighborhood first, then highlight nodes
-            finalHighlightSet.neighborhood().removeClass('dimmed');
-            finalHighlightSet.removeClass('dimmed').addClass('highlighted');
          } else {
-             // If search started but nothing ended up highlighted (e.g. path finding failed), remove dim
-             cyInstance.elements().removeClass('dimmed');
+             nodesToMakeVisible = nodesToMakeVisible.union(nodeInGraph);
          }
-
-
-         if (needsLayout) {
-             console.log("Running layout due to added elements...");
-             cyInstance.layout({ name: 'dagre', rankDir: 'TB', spacingFactor: 1.3, padding: 30,
-                 nodeDimensionsIncludeLabels: true, animate: true, animationDuration: 500, fit: false
-             }).run().promise.then(() => {
-                 console.log("Fitting view to highlighted nodes after layout.");
-                 if (finalHighlightSet.length > 0) {
-                    cyInstance.animate({ fit: { eles: finalHighlightSet, padding: 50 } }, { duration: 400 });
-                 }
-             });
-         } else if (finalHighlightSet.length > 0){
-             console.log("Fitting view to highlighted nodes.");
-             cyInstance.animate({ fit: { eles: finalHighlightSet, padding: 50 } }, { duration: 400 });
+     });
+     let finalHighlightSet = cyInstance.collection();
+     const namesProcessed = new Set();
+     nodesToMakeVisible.forEach(node => {
+         finalHighlightSet = finalHighlightSet.union(node);
+         const nodeName = node.data('name');
+         if (nodeName && analysisResultsStore.duplicateDetails.has(nodeName) && !namesProcessed.has(nodeName)) {
+             const duplicateNodesInGraph = cyInstance.nodes(`[name = "${nodeName}"]`);
+             finalHighlightSet = finalHighlightSet.union(duplicateNodesInGraph);
+             namesProcessed.add(nodeName);
          }
-     }); // End batch update
+     });
+     if (finalHighlightSet.length > 0) {
+        finalHighlightSet.neighborhood().removeClass('dimmed');
+        finalHighlightSet.removeClass('dimmed').addClass('highlighted');
+     } else {
+         cyInstance.elements().removeClass('dimmed');
+     }
+     if (needsLayout) {
+         const layout = cyInstance.layout({ name: 'dagre', rankDir: 'TB', spacingFactor: 1.3, padding: 30,
+             nodeDimensionsIncludeLabels: true, animate: true, animationDuration: 500, fit: false
+         });
+         layout.run();
+         setTimeout(() => {
+             if (finalHighlightSet.length > 0) {
+                cyInstance.animate({ fit: { eles: finalHighlightSet, padding: 50 } }, { duration: 400 });
+             }
+         }, 300);
+     } else if (finalHighlightSet.length > 0){
+         cyInstance.animate({ fit: { eles: finalHighlightSet, padding: 50 } }, { duration: 400 });
+     }
 }
-
 
 function clearGraphHighlights() {
     if (cyInstance) {
@@ -1007,7 +1001,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(downloadButton) downloadButton.addEventListener('click', handleDownload);
     if(refreshGraphButton) refreshGraphButton.addEventListener('click', handleGraphRefresh);
     if(graphSearchInput) {
-        graphSearchInput.addEventListener('input', handleGraphSearch);
+        // Only search on Enter, or after debounce (debounce is still useful for Enter)
+        graphSearchInput.addEventListener('input', debounce(() => {/* no-op, disables live search */}, 300));
         graphSearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleGraphSearch(); });
     }
 

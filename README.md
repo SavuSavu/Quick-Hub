@@ -17,6 +17,8 @@ A centralized dashboard for accessing various web-based utilities and tools, bui
 *   **BOMStorm:** Analyzes CycloneDX XML Software Bill of Materials (SBOMs).
 *   **NetScan Pro (NOT-PING):** Simulates network tests like Ping, Latency, Trace Route, and DNS lookups.
 *   **Vulnews:** Real-time vulnerability intelligence aggregator from NVD and GitHub sources (auto-loads in side panel on wider screens).
+*   **XSS Prober:** Test for reflected and DOM-based XSS vulnerabilities by injecting payloads into URLs and fragments.
+*   **Quick Edit (QE):** Client-side code editor with Monaco, file/folder management, GitHub/URL import, and workspace ZIP download.
 
 ## Project Structure
 Quick-Hub/
@@ -33,11 +35,20 @@ Quick-Hub/
     ├── NOT-PING/
     │   ├── index.html
     │   └── scripts.js
-    └── NVD_News/
+    ├── NVD_News/
+    │   ├── index.html
+    │   ├── results-only.html # Streamlined view for side panel display
+    │   ├── css/
+    │   └── js/
+    ├── Maybe_My_XSS/
+    │   ├── index.html
+    │   └── app.js
+    └── QE/
         ├── index.html
-        ├── results-only.html # Streamlined view for side panel display
-        ├── css/
-        └── js/
+        ├── scripts.js
+        ├── style.css
+        ├── projectNotes.md
+        └── tasks.md
 
 ## Running Locally
 
