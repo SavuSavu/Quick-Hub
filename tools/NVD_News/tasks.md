@@ -3,6 +3,13 @@
 ## Goal
 Implement a save/reload/update functionality so the app stores vulnerability results after the first visit, loads from cache on subsequent visits, and only updates periodically if new findings are found via the API.
 
+## Recent Changes (May 2025)
+
+- Fixed bug where NVD vulnerabilities could appear 2-3 times in the news list by deduplicating results by unique ID after fetching from APIs.
+- Improved error handling in minimal views (like results-only.html) by checking for missing DOM elements before updating them (e.g., resultCount), preventing TypeErrors.
+- Moved event listener override code in results-only.html to after uiManager.js loads, fixing ReferenceError on uiManager.
+- Noted CORS/API rate limit errors are not fixable client-side; fallback to mock data is used when blocked.
+
 ## Tasks
 
 1. **Design Data Storage Structure**
@@ -35,10 +42,10 @@ Implement a save/reload/update functionality so the app stores vulnerability res
 
 ---
 
-- [ ] 1. Design data storage structure
-- [ ] 2. Cache results after fetch
-- [ ] 3. Load from cache on startup
-- [ ] 4. Implement periodic update logic
-- [ ] 5. UI feedback for data source
-- [ ] 6. Handle filter/search consistency
-- [ ] 7. Testing & edge cases
+- [x] 1. Design data storage structure
+- [x] 2. Cache results after fetch
+- [x] 3. Load from cache on startup
+- [x] 4. Implement periodic update logic
+- [x] 5. UI feedback for data source
+- [x] 6. Handle filter/search consistency
+- [x] 7. Testing & edge cases

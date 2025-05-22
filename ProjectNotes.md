@@ -1,5 +1,13 @@
 # Quick-Hub Project Notes
 
+## Recent Bugfixes & Improvements (May 2025)
+
+- Fixed duplicate NVD vulnerabilities in Vulnews by deduplicating results by unique ID after API aggregation.
+- Improved error handling for minimal/iframe views (e.g., results-only.html):
+  - Now checks for missing DOM elements (like resultCount) before updating, preventing TypeErrors.
+  - Moved event listener override code to after uiManager.js loads, fixing ReferenceError on uiManager.
+- CORS and API rate limit errors are now handled gracefully, with fallback to mock data and user feedback when live API access is blocked.
+
 ## Goal
 
 Integrate three separate web applications (SBOM Analyzer, NetScan Pro "NOT-PING", Quick-Hub placeholder) into a single, cohesive project named "Quick-Hub". The project should feature a unified dark theme based on "NOT-PING", dynamically load tools from `tools.json`, and embed local tools using iframes.

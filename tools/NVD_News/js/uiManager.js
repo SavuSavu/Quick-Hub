@@ -338,10 +338,10 @@ const uiManager = {
      */
     renderVulnerabilities() {
         this.filterVulnerabilities();
-        
-        // Update result count
-        this.elements.resultCount.textContent = `${this.appState.filteredVulnerabilities.length} ${this.appState.filteredVulnerabilities.length === 1 ? 'result' : 'results'}`;
-        
+        // Update result count only if the element exists
+        if (this.elements.resultCount) {
+            this.elements.resultCount.textContent = `${this.appState.filteredVulnerabilities.length} ${this.appState.filteredVulnerabilities.length === 1 ? 'result' : 'results'}`;
+        }
         // Render appropriate view
         this.renderView();
     },

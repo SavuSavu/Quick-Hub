@@ -179,8 +179,16 @@ const apiService = {
                 }
             });
             
+            // Deduplicate by unique 'id'
+            const dedupedResults = Object.values(results.reduce((acc, vuln) => {
+                if (!acc[vuln.id]) {
+                    acc[vuln.id] = vuln;
+                }
+                return acc;
+            }, {}));
+            
             // Sort by published date (newest first)
-            const sortedResults = results.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate));
+            const sortedResults = dedupedResults.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate));
             
             // If we have partial results but also errors, return both
             if (sortedResults.length > 0 && errors.length > 0) {
@@ -197,8 +205,15 @@ const apiService = {
             
             // If we have any results despite the error, return them as partial data
             if (results.length > 0) {
+                // Deduplicate before returning
+                const dedupedResults = Object.values(results.reduce((acc, vuln) => {
+                    if (!acc[vuln.id]) {
+                        acc[vuln.id] = vuln;
+                    }
+                    return acc;
+                }, {}));
                 return {
-                    data: results.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate)),
+                    data: dedupedResults.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate)),
                     error: `Partial data loaded. ${error.message}`
                 };
             }
@@ -212,15 +227,20 @@ const apiService = {
                     !selectedSeverities || selectedSeverities.includes(item.severity));
                 mockResults.push(...filteredMockNvd);
             }
-            
             if (selectedSources.includes('GITHUB')) {
                 const filteredMockGithub = this.MOCK_GITHUB_DATA.filter(item => 
                     !selectedSeverities || selectedSeverities.includes(item.severity));
                 mockResults.push(...filteredMockGithub);
             }
-            
+            // Deduplicate mock results
+            const dedupedMockResults = Object.values(mockResults.reduce((acc, vuln) => {
+                if (!acc[vuln.id]) {
+                    acc[vuln.id] = vuln;
+                }
+                return acc;
+            }, {}));
             return {
-                data: mockResults.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate)),
+                data: dedupedMockResults.sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate)),
                 error: `Using sample data due to API access errors: ${error.message}`
             };
         }
